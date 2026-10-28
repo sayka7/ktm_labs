@@ -23,20 +23,20 @@ Talablar: Python 3.10+, ~2 GB disk (torch CPU). GPU shart emas — barcha kodlar
 
 ## Laboratoriyalar
 
-| Kod | Mavzu | Bosqichlar | Topshiriqlar |
+| Kod | Mavzu | Bosqichlar | Mustaqil topshiriqlar |
 |---|---|---|---|
-| [A1](A1/) | Sun'iy intellektga asoslangan kompyuter tizimlari arxitekturasini tahlil qilish va loyihalash | 7 | 10 |
-| [A2](A2/) | GPU va sun'iy intellekt tezlatkichlaridan foydalangan holda parallel hisoblashni tashkil etish | 7 | 10 |
-| [A3](A3/) | Sun'iy intellekt tizimlarini optimallashtirish va unumdorligini baholash | 6 | 10 |
-| [A4](A4/) | Edge AI va Cloud AI platformalarida sun'iy intellekt tizimlarini joylashtirish | 6 | 10 |
-| [A5](A5/) | Taqsimlangan sun'iy intellekt tizimlarini ishlab chiqish | 7 | 10 |
-| [A6](A6/) | Sun'iy intellekt tizimlarining xavfsizligi va ishonchliligini tahlil qilish | 7 | 10 |
-| [A7](A7/) | Yakuniy kompleks loyihani shakllantirish: ma'lumot -> model -> API -> monitoring -> adolatlilik | 7 | 10 |
+| [A1](A1/) | Sun'iy intellektga asoslangan kompyuter tizimlari arxitekturasini tahlil qilish va loyihalash | 7 | 20 variant + 10 mashq |
+| [A2](A2/) | GPU va sun'iy intellekt tezlatkichlaridan foydalangan holda parallel hisoblashni tashkil etish | 7 | 20 variant + 10 mashq |
+| [A3](A3/) | Sun'iy intellekt tizimlarini optimallashtirish va unumdorligini baholash | 6 | 20 variant + 10 mashq |
+| [A4](A4/) | Edge AI va Cloud AI platformalarida sun'iy intellekt tizimlarini joylashtirish | 6 | 20 variant + 10 mashq |
+| [A5](A5/) | Taqsimlangan sun'iy intellekt tizimlarini ishlab chiqish | 7 | 20 variant + 10 mashq |
+| [A6](A6/) | Sun'iy intellekt tizimlarining xavfsizligi va ishonchliligini tahlil qilish | 7 | 20 variant + 10 mashq |
+| [A7](A7/) | Yakuniy kompleks loyihani shakllantirish: ma'lumot -> model -> API -> monitoring -> adolatlilik | 7 | 20 variant + 10 mashq |
 
-Har papkada `README.md` (bosqichlar, kutilgan natija, 10 topshiriq), `VARIANTS.md` (20 ta mustaqil variant), `s1_*.py … sN_*.py` (mustaqil dasturlar) va `run_all.sh` bor.
+Har papkada `README.md` (bosqichlar, kutilgan natija, 10 mashq va 20 ta mustaqil topshiriq-variant to'liq matni), `VARIANTS.md` (faqat variantlar), `s1_*.py … sN_*.py` (mustaqil dasturlar) va `run_all.sh` bor.
 
 ## Baholash
 
-Har laboratoriyada 10 qo'shimcha topshiriq: 3 oson (5 ball), 4 o'rta (10 ball), 3 qiyin (15 ball) = 100 ball. Hisobot: kod + natijalar + qisqa xulosa.
+Har laboratoriyada: (1) talabaning o'z varianti — 20 variantdan biri, 100 ballik mezon bilan (asosiy topshiriq); (2) 10 qo'shimcha mashq: 3 oson (5 ball), 4 o'rta (10 ball), 3 qiyin (15 ball) = 100 ball. Hisobot: kod + natijalar + qisqa xulosa.
 
 © 2026-2027 Sun'iy intellektga asoslangan kompyuter tizimlari muhandisligi. O'quv maqsadida.
