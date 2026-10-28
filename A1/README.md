@@ -124,3 +124,7 @@ Tajriba qilib ko'ring:
 | 10 | **Strukturaviy sxema va interfeyslar generatori** — Tanlangan konfiguratsiya (6-qadam natijasi) asosida strukturaviy sxemani avtomatik hosil qiluvchi skript yozing: bloklar ro'yxati, har interfeys uchun protokol, o'tkazuvchanlik (Mbit/s yoki MB/s — 1-qadam formulalaridan) va kechikish byudjeti (3-qadam natijasidan) jadval ko'rinishida chiqsin; 3 ta xavf va ularning kamaytirish choralarini ham skript matn sifatida chop etsin. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).

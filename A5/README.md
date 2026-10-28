@@ -123,3 +123,7 @@ Tajriba qilib ko'ring:
 | 10 | **Klaster konfiguratsiyasi tanlovi** — 7-qadam kalkulyatorini kengaytiring: berilgan model (parametr soni va GFLOP talaba tanlaydi), byudjet (GPU soni ≤ 32) va uchta tarmoq varianti uchun qadam vaqtini, E(N) ni va «1 epoxa narxi»ni (GPU-soat) hisoblaydigan funksiya yozing. Eng kam GPU-soat beradigan (N, tarmoq, accum) kombinatsiyasini toping, natijani issiqlik xaritasi (N x accum) ko'rinishida chizing va tanlovni asoslang. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).

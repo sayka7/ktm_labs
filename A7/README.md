@@ -124,3 +124,7 @@ Tajriba qilib ko'ring:
 | 10 | **O'z mavzungiz uchun to'liq mini-loyiha va pasport** — Transport (bekatda kutish vaqti) yoki sanoat monitoringi (sensorlar bo'yicha nosozlik) mavzusini tanlab, 1–7-qadamlar tuzilmasini sintetik ma'lumot bilan takrorlang: o'z sxemangiz va guruh identifikatoringiz (bekat/jihoz), kamida 3 eksperimentli reestr, ONNX + FastAPI xizmati, drift simulyatsiyasi, kamida bitta sezgir atribut bo'yicha adolatlilik tahlili va 7-qadamdagi kabi avtomatik pasport + rubrika. Hisobotda model kartasi, SLO jadvali, ADR ko'rinishida kamida 2 ta qaror (masalan, chegara tanlovi, ko'lam cheklash) bo'lsin. Virtual laboratoriyada bajariladi. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).

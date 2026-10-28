@@ -5,8 +5,8 @@ Fan sayti: https://aiscan.airi.uz/ktm/ (sillabus, ma'ruza matnlari, virtual labo
 ## Tez boshlash
 
 ```bash
-git clone <REPO_URL>
-cd ktm-labs
+git clone https://github.com/sayka7/ktm_labs.git
+cd ktm_labs
 python3 -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cd A1 && python3 s1_*.py          # yoki ./run_all.sh
@@ -33,7 +33,7 @@ Talablar: Python 3.10+, ~2 GB disk (torch CPU). GPU shart emas — barcha kodlar
 | [A6](A6/) | Sun'iy intellekt tizimlarining xavfsizligi va ishonchliligini tahlil qilish | 7 | 10 |
 | [A7](A7/) | Yakuniy kompleks loyihani shakllantirish: ma'lumot -> model -> API -> monitoring -> adolatlilik | 7 | 10 |
 
-Har papkada `README.md` (bosqichlar, kutilgan natija, 10 topshiriq), `s1_*.py … sN_*.py` (mustaqil dasturlar) va `run_all.sh` bor.
+Har papkada `README.md` (bosqichlar, kutilgan natija, 10 topshiriq), `VARIANTS.md` (20 ta mustaqil variant), `s1_*.py … sN_*.py` (mustaqil dasturlar) va `run_all.sh` bor.
 
 ## Baholash
 

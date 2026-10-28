@@ -110,3 +110,7 @@ Tajriba qilib ko'ring:
 | 10 | **To'liq Pareto hisoboti o'z modelingiz uchun** — O'zingiz tanlagan boshqa arxitektura (masalan, 3 qatlamli kengroq CNN yoki `make_classification` dagi 100 belgili MLP) uchun 1–6 qadamlarning barchasini takrorlang: eksport, ORT darajalari, PyTorch va ORT kvantlash (kamida 2 kalibrlash usuli), yakuniy jadval, Pareto grafigi, energiya bahosi. 4–6 betlik hisobotda aniq ssenariy (masalan, A1 dagi SHV tizimi) uchun konfiguratsiya tanlang va «GPU bo'lsa nima o'zgaradi» bo'limini yozing. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).

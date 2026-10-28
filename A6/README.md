@@ -124,3 +124,7 @@ Tajriba qilib ko'ring:
 | 10 | **To'liq ishonchlilik hisoboti generatori** — 7-qadam skriptini kengaytiring: u 1-6 qadam funksiyalarini chaqirib toza/FGSM/PGD aniqligini (3 eps), adversarial o'qitilgan modelni, DP/EO farqlarini (baza va tuzatilgan), SHAP top-5 va saliency korrelyatsiyasini o'lchasin, so'ng 20 bandni dalillar bilan to'ldirib Markdown formatida model kartasi + tekshiruv ro'yxati hisobotini print qilsin. Xavf toifasi (minimal/yuqori) kirish parametri bo'lsin; yuqori xavfda majburiy bandlar bajarilmasa «joriy etish mumkin emas» xulosasi chiqsin. Umumiy ish vaqti 60 s dan oshmasin. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).

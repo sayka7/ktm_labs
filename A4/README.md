@@ -110,3 +110,7 @@ Tajriba qilib ko'ring:
 | 10 | **To'liq joylashtirish hisoboti o'z ssenariyingiz uchun** — A1 da tanlagan tizimingiz uchun 1–6 qadamlarni to'liq takrorlang: o'z ONNX modelingiz bilan xizmat (probe'lar, metrikalar), yuklama sinovi (kamida 5 parallellik darajasi), o'z Dockerfile va K8s manifestlaringizni skriptlar bilan 100 % PASS holatiga keltirish, o'z yuklama profilingiz bilan HPA simulyatsiyasi (kamida 3 konfiguratsiya), Cloud/Edge/Gibrid TCO 1/3/5 yil va sezgirlik tahlili. 6–8 betlik hisobot: yakuniy arxitektura tavsiyasi va A1 strukturaviy sxemasining yangilangan varianti bilan. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).

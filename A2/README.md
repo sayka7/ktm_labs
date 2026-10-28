@@ -124,3 +124,7 @@ Tajriba qilib ko'ring:
 | 10 | **CPU Roofline va GPU bashorati** — Barcha qadamlardagi o'lchovlarni (sof Python, NumPy, prange, tiled, im2col, torch conv2d, GELU eager/fused) arifmetik intensivlik–unumdorlik tekisligiga joylashtiring: sandbox CPU uchun cho'qqi GFLOP/s ni torch FP32 matmul'ning eng yaxshi natijasidan, xotira o'tkazuvchanligini reduktsiya (2-qadam) natijasidan oling; har nuqta qaysi chegara bilan cheklanganini tushuntiring va A2 matnidagi RTX 3060 ko'rsatkichlari bilan GPU'da kutilgan tezlanishni bashorat qiling. | qiyin | 15 |
 
 Hisobot: har topshiriq uchun kod + natija jadvali/grafik + 3–5 jumla xulosa; o'qituvchiga belgilangan tartibda topshiriladi.
+
+## Mustaqil bajarish uchun variantlar
+
+20 ta variant — `VARIANTS.md` faylida (jurnal raqami bo'yicha tanlanadi).
