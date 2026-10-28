@@ -34,6 +34,12 @@ Talablar: Python 3.10+, ~2 GB disk (torch CPU). GPU shart emas — barcha kodlar
 | [A5](A5/) | Taqsimlangan sun'iy intellekt tizimlarini ishlab chiqish | 7 | 20 variant + 10 mashq |
 | [A6](A6/) | Sun'iy intellekt tizimlarining xavfsizligi va ishonchliligini tahlil qilish | 7 | 20 variant + 10 mashq |
 | [A7](A7/) | Yakuniy kompleks loyihani shakllantirish: ma'lumot -> model -> API -> monitoring -> adolatlilik | 7 | 20 variant + 10 mashq |
+| [MT1](MT1/) | Sun'iy intellekt asosli mahsulotlar hayot sikli: Netflix, Uber va Amazon misollari tahlili | 7 | 20 variant + 10 mashq |
+| [MT2](MT2/) | AI modelini optimallashtirish: latency, throughput va energiya samaradorligi tahlili (ONNX Runtime, TensorRT, OpenVINO) | 7 | 20 variant + 10 mashq |
+| [MT3](MT3/) | Sun'iy intellektga asoslangan zamonaviy kompyuter tizimlari arxitekturalarini (CPU, GPU, TPU, NPU va FPGA) qiyosiy tahlil qilish va ularning AI ilovalaridagi samaradorligini baholash | 7 | 20 variant + 10 mashq |
+| [MT4](MT4/) | Docker va Kubernetes platformalaridan foydalanib sun'iy intellekt modelini joylashtirish (Deployment) va AI xizmatlarini boshqarish bo'yicha amaliy loyiha | 7 | 20 variant + 10 mashq |
+| [MT5](MT5/) | LLM asosidagi AI tizimlarining muhandislik muammolari: prompt engineering, RAG arxitekturasi, LLM xavfsizligi va hallucination | 7 | 20 variant + 10 mashq |
+| [MT6](MT6/) | Sun'iy intellektga asoslangan kompyuter tizimlarining xavfsizligi, ishonchliligi va etik tamoyillarini xalqaro standartlar (ISO/IEC 42001, ISO/IEC 23894, EU AI Act) asosida tahlil qilish va takomillashtirish | 7 | 20 variant + 10 mashq |
 
 Har papkada `README.md` (bosqichlar, kutilgan natija, 10 mashq va 20 ta mustaqil topshiriq-variant to'liq matni), `VARIANTS.md` (faqat variantlar), `s1_*.py … sN_*.py` (mustaqil dasturlar) va `run_all.sh` bor.
 
