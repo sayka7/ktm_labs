@@ -1,5 +1,6 @@
 # A2. GPU va sun'iy intellekt tezlatkichlaridan foydalangan holda parallel hisoblashni tashkil etish
 
+📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A2_laboratoriya_qollanma.pdf`
 Bu virtual laboratoriyada siz matritsa ko'paytirish va konvolyutsiyani — neyron tarmoqning asosiy yadrolarini — bir necha darajada parallellashtirasiz va bir xil metodika (isinish, takror, median) bilan o'lchaysiz: sof Python → NumPy vektorlash → Numba @njit va prange (OpenMP muqobili) → kesh bloklash → PyTorch iplari → multiprocessing → Amdahl qonuni. Muhim: sandbox'da CUDA va GPU mavjud emas, shuning uchun real labdagi CUDA yadrolari va Tensor Core o'lchovlari o'rniga 2 yadroli CPU'da parallelizm o'rganiladi; har qadam oxirida «GPU bo'lsa shu kod qanday o'zgaradi» izohi berilgan. Massivlar kichik (n ≤ 1024), chunki Numba birinchi kompilyatsiyasi va 2 yadro vaqt chegarasini talab qiladi.
 
 ## Muhit

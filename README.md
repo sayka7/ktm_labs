@@ -1,6 +1,7 @@
 # KTM laboratoriyalari — Sun'iy intellektga asoslangan kompyuter tizimlari muhandisligi
 
 Fan sayti: https://aiscan.airi.uz/ktm/ (sillabus, ma'ruza matnlari, virtual laboratoriya). Bu repozitoriyda virtual laboratoriyaning barcha bosqich kodlari va qo'shimcha topshiriqlar — kompyuteringizga ko'chirib olib bajarish uchun.
+📄 Barcha laboratoriyalar bitta PDF da: `KTM_laboratoriyalar.pdf`; har papkada o'z `*_laboratoriya_qollanma.pdf` fayli bor.
 
 ## Tez boshlash
 

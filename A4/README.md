@@ -1,5 +1,6 @@
 # A4. Edge AI va Cloud AI platformalarida sun'iy intellekt tizimlarini joylashtirish
 
+📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A4_laboratoriya_qollanma.pdf`
 Bu virtual laboratoriyada siz inferens modelini xizmat sifatida joylashtirish zanjirini jarayon ichida bajarasiz: FastAPI xizmati (/healthz, /readyz, /predict, /metrics) `TestClient` bilan sinaladi va yuklama ostida o'lchanadi, Dockerfile va Kubernetes manifestlari (Deployment/Service/HPA/ConfigMap) `pyyaml` bilan tahlil qilinib muhandislik qoidalariga tekshiriladi, HPA avtomasshtablash navbat modeli bilan simulyatsiya qilinadi, Cloud/Edge/Gibrid arxitekturalar TCO va kechikish kalkulyatori bilan solishtiriladi. Real labdan farqi: Docker/minikube/Jetson/Coral yo'q — konteyner va klaster o'rniga jarayon ichidagi xizmat va simulyatsiya; model — A3 dagi digits MLP (ONNX).
 
 ## Muhit
