@@ -1,6 +1,7 @@
 # A3. Sun'iy intellekt tizimlarini optimallashtirish va unumdorligini baholash
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A3_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz o'qitilgan neyron tarmoqni ishlab chiqarishga tayyorlash zanjirini to'liq bajarasiz: PyTorch modelini ONNX'ga eksport qilish, ONNX Runtime'da grafik optimallashtirish darajalari va paket o'lchamini o'lchash, PyTorch va ONNX Runtime'da INT8 kvantlash (dinamik va statik, turli kalibrlash usullari), so'ngra aniqlik-tezlik-hajm jadvali va Pareto tahlili. Real labdan farqi: ResNet-50 va ImageNet o'rniga sklearn digits (8x8) va kichik CNN/MLP, GPU/TensorRT/OpenVINO yo'q — ular o'rniga CPU muqobillari va «GPU'da bu qadam qanday bo'ladi» izohlari; sandbox CPU'da AVX/VNNI yo'qligi sababli INT8 tezlanishi kutilmaydi (bu o'zi muhim saboq).
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Kichik CNN sklearn digits to'plamida 3 epoxa o'qitiladi, batch 1 kechikishi (p50/p95) o'lchanadi, so'ngra model `torch.onnx.export` bilan dinamik paket o'qi va opset 17 bilan eksport qilinadi. `onnx.checker` grafikni tekshiradi, ONNX Runtime chiqishi PyTorch bilan `np.allclose` orqali solishtiriladi. O'zgartirib ko'ring: epoxa sonini, `dynamic_axes` ni olib tashlab kirish shaklini, `do_constant_folding=False` da tugunlar sonini.
 
-Fayl: `s1_1_qadam_etalon_pytorch_fp32_oqitish_va_o.py` — ishga tushirish: `python3 s1_1_qadam_etalon_pytorch_fp32_oqitish_va_o.py`
+Fayl: `s1_1_qadam_etalon_pytorch_fp32_oqitish_va_o.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_etalon_pytorch_fp32_oqitish_va_o.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu bosqichda qaysi ikki narsa etalon bo'lib xizmat qiladi va keyingi qadamlar nima uchun aynan shu raqamlarga tayanadi?
+2. O'qitish siklining har bir paketida optimizatorga qaysi to'rt amalni qaysi tartibda bajarish kerak? Baholashda model qaysi rejimda bo'lishi kerak va nega?
+3. Kechikishni o'lchashda nima uchun avval bir necha 'isinish' chaqiruvi qilinadi va o'rtacha emas, foizlik (p50, p95) olinadi?
+4. Agar `dynamic_axes` ko'rsatilmasa, eksport qilingan modelga keyin batch 64 berilsa nima bo'ladi?
+5. Eval rejimidagi CNN'da 2 ta BatchNorm bor, lekin ONNX grafikda BN tuguni ko'rinmasa — u qayerga ketgan? `do_constant_folding=False` da tugunlar soni o'zgaradimi?
+6. PyTorch va ORT chiqishlari bit-bitigacha bir xil bo'lishi shartmi? Qanday tolerantlik maqbul va maksimal farq taxminan qancha chiqishi kerak?
 
 Kutilgan natija: 3 epoxadan keyin ~94 % aniqlik, PyTorch eager p50 ~0,15 ms; ONNX grafikda 10 tugun (BatchNorm Conv'ga birlashgan), maksimal farq ~1e-6, «MOS».
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 ONNX Runtime'ning 4 ta grafik optimallashtirish darajasi (DISABLE_ALL, BASIC, EXTENDED, ALL) batch 1 da o'lchanadi va optimallashtirilgan grafikdagi tugunlar soni sanaladi; keyin paket 1/16/64/256 uchun throughput va Little qonuni (N = X·R), intra_op oqimlar 1 va 2 taqqoslanadi (GPU parallelligi o'rniga). Oxirida 2000 so'rov/s talabi uchun nusxalar soni rejalashtiriladi.
 
-Fayl: `s2_2_qadam_onnx_runtime_optimallashtirish_d.py` — ishga tushirish: `python3 s2_2_qadam_onnx_runtime_optimallashtirish_d.py`
+Fayl: `s2_2_qadam_onnx_runtime_optimallashtirish_d.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_onnx_runtime_optimallashtirish_d.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu qadamda qaysi to'rt 'tutqich' (sozlama) o'zgartiriladi va har biri qaysi ko'rsatkichga — latency yoki throughput'ga — ta'sir qiladi deb kutasiz?
+2. ORT optimallashtirilgan grafikni faylga yozib qo'ysa, tugunlar sonini qanday sanaysiz? EXTENDED/ALL da 10 tugun nechtaga tushishi kutiladi va nega?
+3. Nima uchun bir xil grafik ORT'da PyTorch eager'dan 6–9 marta tez ishlashi mumkin, garchi matematik amallar bir xil bo'lsa ham?
+4. Paket b ta rasmdan iborat va bitta chaqiruv o'rtacha T sekund olsa, throughput qanday hisoblanadi? Little qonuni N = X·R bu yerda nimaga teng chiqishi kerak?
+5. 2 oqim 1 oqimga nisbatan ideal holda 2x tezlanish berishi kerak. Real natija ~1,9x yoki undan kam bo'lsa, buning sababi nima?
+6. 2000 so'rov/s va p99 kechikish berilganda nechta parallel nusxa kerak? Nima uchun natijani yuqoriga yaxlitlash kerak?
 
 Kutilgan natija: ORT ALL PyTorch eager'dan 6–9 marta tez; EXTENDED/ALL da tugunlar 10 → 7–8; batch 256 da throughput 10+ marta yuqori, latency ham oshadi; 2 oqim ~1,9x.
 
@@ -43,7 +62,15 @@ Tajriba qilib ko'ring:
 
 MLP (Linear og'ir model) `torch.ao.quantization.quantize_dynamic` bilan INT8 ga o'tkaziladi: kvantlash formulasi q = round(w/s) qo'lda tekshiriladi, hajm (state_dict baytlari), aniqlik va batch 1/256 kechikishi FP32 bilan solishtiriladi. Sandbox CPU'da AVX yo'qligi sababli `qnnpack` dvigateli majburan tanlanadi — real serverda bu qator kerak emas.
 
-Fayl: `s3_3_qadam_pytorchda_int8_dinamik_kvantlash.py` — ishga tushirish: `python3 s3_3_qadam_pytorchda_int8_dinamik_kvantlash.py`
+Fayl: `s3_3_qadam_pytorchda_int8_dinamik_kvantlash.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_pytorchda_int8_dinamik_kvantlash.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. 'Dinamik' kvantlashda nima oldindan INT8 ga o'tkaziladi, nima esa ish vaqtida? Nega bu usul aynan Linear og'ir modellar (MLP, BERT, LSTM) uchun mos?
+2. PyTorch'da qaysi funksiya modeldagi faqat ma'lum turdagi qatlamlarni kvantlaydi? Natijada qatlam nomi qanday o'zgarishi kerak?
+3. Simmetrik per-tensor kvantlashda masshtab s qanday tanlanadi, shunda eng katta vazn INT8 diapazonidan chiqib ketmasin? Tiklash xatosi s ga nisbatan qanchadan oshmasligi kerak?
+4. Model 'hajmini' diskka fayl yozmasdan qanday o'lchash mumkin? Nima uchun hajm aniq 4 marta emas, ~3,8 marta kichrayadi?
+5. Aniqlik ±0,3 p.p. ichida qolsa-yu, tezlik 0,7–1,0x chiqsa — bu kvantlash 'ishlamadi' degani mi? Natija qaysi apparat xususiyatiga bog'liq?
 
 Kutilgan natija: Hajm ~3,8 marta kichik (335 → 89 KB), aniqlik o'zgarmaydi (±0,3 p.p.), tezlik bu CPU'da 0,7–1,0x (VNNI yo'q).
 
@@ -57,7 +84,16 @@ Tajriba qilib ko'ring:
 
 CNN ONNX modeli `quant_pre_process` dan o'tkazilib, `quantize_dynamic` va `quantize_static` (QDQ format) bilan kvantlanadi: per-channel MinMax, per-channel Percentile, per-tensor MinMax va ataylab noto'g'ri — tasodifiy shovqin bilan kalibrlash (A3 matnidagi 3-xato). Har variant uchun hajm, aniqlik, p50, throughput va Q/DQ tugunlar soni jadvalga yig'iladi.
 
-Fayl: `s4_4_qadam_onnx_runtimeda_kvantlash_dinamik.py` — ishga tushirish: `python3 s4_4_qadam_onnx_runtimeda_kvantlash_dinamik.py`
+Fayl: `s4_4_qadam_onnx_runtimeda_kvantlash_dinamik.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_onnx_runtimeda_kvantlash_dinamik.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Dinamik va statik kvantlashning asosiy farqi nimada? Statik kvantlashga qo'shimcha ravishda nima kerak bo'ladi?
+2. ORT kalibratori ma'lumotni qanday shaklda so'raydi? Iterator tugaganini unga qanday bildirasiz?
+3. quantize_static'da QuantFormat.QDQ, per_channel va calibrate_method parametrlari nimani belgilaydi? MinMax va Percentile qachon farqli natija beradi?
+4. Agar kalibrlash ma'lumoti 0..8 diapazonidagi shovqin bo'lsa, real kirish esa 0..1 bo'lsa, masshtab s ga nima bo'ladi va aniqlik qanday o'zgaradi?
+5. Kvantlangan grafikda Q/DQ tugunlarini qanday sanaysiz va bu son model haqida nima aytadi?
+6. Hajm 17 KB dan faqat 11–13 KB ga tushsa (4x emas), sababini qanday tushuntirasiz? Real kalibrlashda aniqlik farqi qancha bo'lishi kerak?
 
 Kutilgan natija: Hajm 17 → 11–13 KB; real kalibrlash aniqlikni saqlaydi (±0,3 p.p.), shovqinli kalibrlash 1 p.p. atrofida yo'qotadi; INT8 bu CPU'da tezroq emas.
 
@@ -71,7 +107,16 @@ Tajriba qilib ko'ring:
 
 6 ta konfiguratsiya (PyTorch FP32, PyTorch INT8 dinamik, ORT FP32, ORT INT8 dinamik, ORT statik MinMax/Percentile) bitta jadvalga yig'iladi: hajm, aniqlik, p50 (batch 1), throughput (batch 256), tezlanish. Pareto-optimal nuqtalar (latency kichik, aniqlik katta) aniqlanadi va ikki o'qli grafik chiziladi: latency–aniqlik va hajm–throughput.
 
-Fayl: `s5_5_qadam_yakuniy_jadval_pareto_tahlili_va.py` — ishga tushirish: `python3 s5_5_qadam_yakuniy_jadval_pareto_tahlili_va.py`
+Fayl: `s5_5_qadam_yakuniy_jadval_pareto_tahlili_va.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_yakuniy_jadval_pareto_tahlili_va.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Oltita konfiguratsiyani adolatli solishtirish uchun qaysi shartlar bir xil bo'lishi kerak (ma'lumot, oqimlar, batch, takrorlar soni)?
+2. 'Tezlanish' ustunini nimaga nisbatan hisoblaysiz va formula qanday ko'rinadi?
+3. A nuqta B ni 'ustun turadi' (dominates) deyish uchun latency va aniqlik bo'yicha qanday shartlar bajarilishi kerak? Teng bo'lgan holat-chi?
+4. Pareto-optimal nuqtalarni pandas'da sikl bilan qanday topasiz — har qator uchun 'undan ustun nuqta bormi?' savolini qaysi vektor amal bilan berasiz?
+5. Latency o'qini nega logarifmik shkalada chizish ma'qul? Grafikda Pareto nuqtalarini qanday ajratib ko'rsatasiz?
+6. Kutilgan natija: ORT FP32 va statik Percentile Pareto chegarasida. Agar sizda PyTorch FP32 ham Pareto'ga tushsa, buni qanday izohlaysiz?
 
 Kutilgan natija: ORT variantlari PyTorch'dan 4–7 marta tez; Pareto chegarasida ORT FP32 va statik Percentile; grafikda qizil nuqtalar — Pareto.
 
@@ -85,7 +130,16 @@ Tajriba qilib ko'ring:
 
 RAPL/nvidia-smi yo'qligi sababli quvvat MODEL bilan baholanadi: P = P_bosh + (P_to'liq − P_bosh)·CPU_bandlik, bandlik `time.process_time()/devor vaqti` dan olinadi. FP32 va INT8 dinamik, 1 va 2 oqim, batch 1 va 64 uchun µJ/inferens (to'liq va dinamik) hamda inferens/s/W hisoblanadi; Little qonuni bilan 5000 so'rov/s uchun nusxalar va quvvat; oxirida GPU'da TensorRT FP16/INT8 va quvvat o'lchash qadamlari (buyruqlar va kutilgan raqamlar).
 
-Fayl: `s6_6_qadam_energiya_bahosi_nusxalar_rejasi_.py` — ishga tushirish: `python3 s6_6_qadam_energiya_bahosi_nusxalar_rejasi_.py`
+Fayl: `s6_6_qadam_energiya_bahosi_nusxalar_rejasi_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_energiya_bahosi_nusxalar_rejasi_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Sandbox'da RAPL va nvidia-smi yo'q. Unda quvvatni qanday baholash mumkin va bu baho qaysi o'lchanadigan kattalikka tayanadi?
+2. time.perf_counter() va time.process_time() nimasi bilan farq qiladi? 2 oqim ishlaganda process_time devor vaqtidan katta bo'lishi mumkinmi?
+3. Bitta inferensga to'g'ri keladigan energiya (µJ) qanday hisoblanadi? 'To'liq' va 'dinamik' energiya farqi nima va qaysi biri TCO uchun muhim?
+4. Nima uchun batch 64 da inferens boshiga energiya batch 1 dan 5–15 marta kam bo'lishi kerak? 2 oqim batch 1 da energiyani nega oshiradi?
+5. 5000 so'rov/s yuklama uchun nusxalar soni va umumiy quvvatni qanday topasiz? ResNet-50 (20 ms) bilan bizning CNN natijasi nega bunchalik farq qiladi?
+6. GPU'da TensorRT bilan FP16/INT8 ga o'tganda quvvat deyarli o'zgarmasa-yu, mJ/rasm 119 → 27 ga tushsa, energiya asosan nimaga proporsional degan xulosa chiqadi?
 
 Kutilgan natija: Batch 64 da energiya batch 1 dan 5–15 marta kam; 2 oqim batch 1 da energiya ortadi (bandlik 2x, tezlik oshmaydi); ustunli grafik.
 

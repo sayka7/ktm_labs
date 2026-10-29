@@ -87,83 +87,39 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 DOCS = build_docs(seed=0)
 
+# TODO 1: so'z oynasi bilan bo'laklash: qadam = size - overlap; har bo'lak (doc_id, matn)
 def chunk_words(doc_id, text, size, overlap):
-    """Belgilangan so'z oynasi bilan bo'laklash (overlap — qo'shni bo'laklar ustma-ust tushishi)."""
-    w = text.split(); step = max(1, size - overlap); out = []
-    for i in range(0, max(1, len(w) - overlap), step):
-        out.append((doc_id, " ".join(w[i:i + size])))
-        if i + size >= len(w): break
-    return out
+    raise NotImplementedError("TODO 1: so'z oynasi bo'laklash")
 
+# TODO 2: jumlalar bo'yicha bo'laklash (har n_sent jumla bitta bo'lak)
 def chunk_sentences(doc_id, text, n_sent):
-    s = sentences(text)
-    return [(doc_id, " ".join(s[i:i + n_sent])) for i in range(0, len(s), n_sent)]
+    raise NotImplementedError("TODO 2: jumla bo'laklash")
 
 class BM25:
-    """Okapi BM25 (Robertson va boshq.) — k1, b parametrlari bilan, qo'lda yozilgan."""
+    """Okapi BM25 (k1, b) — qo'lda yozing."""
     def __init__(self, texts, k1=1.5, b=0.75):
-        self.docs = [collections.Counter(tokens(t)) for t in texts]
-        self.len = np.array([sum(d.values()) for d in self.docs]); self.avg = self.len.mean()
-        df = collections.Counter(w for d in self.docs for w in d); N = len(texts)
-        self.idf = {w: math.log(1 + (N - n + 0.5) / (n + 0.5)) for w, n in df.items()}
-        self.k1, self.b = k1, b
+        # TODO 3: har bo'lak uchun tokens() chastotasi, uzunligi, o'rtacha uzunlik va idf
+        raise NotImplementedError("TODO 3: BM25 indeksi")
     def scores(self, q):
-        out = np.zeros(len(self.docs))
-        for w in tokens(q):
-            if w not in self.idf: continue
-            for i, d in enumerate(self.docs):
-                f = d.get(w, 0)
-                if f: out[i] += self.idf[w] * f * (self.k1 + 1) / (f + self.k1 * (1 - self.b + self.b * self.len[i] / self.avg))
-        return out
+        # TODO 4: so'rov so'zlari bo'yicha idf * f*(k1+1) / (f + k1*(1-b+b*len/avg)) yig'indisi
+        raise NotImplementedError("TODO 4: BM25 ballari")
 
+# TODO 5: Reciprocal Rank Fusion — har ro'yxatdagi o'rin (rank) bo'yicha 1/(k+rank) yig'indisi
 def rrf(*score_lists, k=60):
-    """Reciprocal Rank Fusion: har ro'yxatdagi o'rin bo'yicha 1/(k+rank) yig'indisi."""
-    tot = np.zeros(len(score_lists[0]))
-    for s in score_lists:
-        ranks = np.empty(len(s)); ranks[np.argsort(-s)] = np.arange(1, len(s) + 1)
-        tot += 1.0 / (k + ranks)
-    return tot
+    raise NotImplementedError("TODO 5: RRF")
 
+# TODO 6: har savol uchun ballar -> tartib; oltin jumlani TO'LIQ saqlagan bo'lakning o'rni; recall@1/3/5, MRR, top-3 so'zlar
 def evaluate(chunks, method):
-    texts = [c[1] for c in chunks]
-    bm = BM25(texts)
-    tf = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), sublinear_tf=True).fit(texts)
-    M = tf.transform(texts)
-    ranks, ctx = [], []
-    for d, s, q, a in FACTS:
-        sb = bm.scores(q); st = (M @ tf.transform([q]).T).toarray().ravel()
-        sc = {"BM25": sb, "TF-IDF(char)": st, "Gibrid RRF": rrf(sb, st)}[method]
-        order = np.argsort(-sc)
-        rel = [i for i, t in enumerate(texts) if s in t]          # oltin jumlani TO'LIQ saqlagan bo'lak(lar)
-        r = next((pos + 1 for pos, i in enumerate(order) if i in rel), None)
-        ranks.append(r); ctx.append(sum(len(texts[i].split()) for i in order[:3]))
-    rec = {k: np.mean([r is not None and r <= k for r in ranks]) for k in (1, 3, 5)}
-    mrr = np.mean([1 / r if r else 0 for r in ranks])
-    return rec, mrr, np.mean(ctx)
+    raise NotImplementedError("TODO 6: recall@k va MRR")
 
 STRATS = {"so'z-40/0": lambda d, t: chunk_words(d, t, 40, 0), "so'z-40/10": lambda d, t: chunk_words(d, t, 40, 10),
           "so'z-80/20": lambda d, t: chunk_words(d, t, 80, 20), "so'z-160/40": lambda d, t: chunk_words(d, t, 160, 40),
           "jumla-2": lambda d, t: chunk_sentences(d, t, 2), "jumla-4": lambda d, t: chunk_sentences(d, t, 4)}
-print(f"Hujjatlar: {len(DOCS)}, faktlar/savollar: {len(FACTS)}, umumiy so'z: {sum(len(t.split()) for t in DOCS.values())}")
 print("=== Qidiruv sifati: bo'laklash x usul ===")
-print(f"{'bo`laklash':<13}{'bo`lak':>7}{'usul':>15}{'R@1':>7}{'R@3':>7}{'R@5':>7}{'MRR':>7}{'so`z@3':>8}")
 table, cost = {}, {}
 for sname, fn in STRATS.items():
     chunks = [c for d, t in DOCS.items() for c in fn(d, t)]
     for method in ("BM25", "TF-IDF(char)", "Gibrid RRF"):
         rec, mrr, cw = evaluate(chunks, method); table[(sname, method)] = mrr; cost[(sname, method)] = cw
-        print(f"{sname:<13}{len(chunks):>7}{method:>15}{rec[1]:>7.2f}{rec[3]:>7.2f}{rec[5]:>7.2f}{mrr:>7.3f}{cw:>8.0f}")
-best = max(table, key=table.get)
-print(f"\nEng yaxshi MRR: {best[0]} + {best[1]} = {table[best]:.3f} (top-3 kontekst ~{cost[best]:.0f} so'z)")
-eff = max(table, key=lambda k: table[k] / cost[k] * 100)
-print(f"MRR / 100 so'z kontekst bo'yicha eng tejamkor: {eff[0]} + {eff[1]} (MRR={table[eff]:.3f}, ~{cost[eff]:.0f} so'z)")
-print("Eslatma: katta bo'lak — oltin jumla ichida qolish ehtimoli yuqori, lekin promptga ko'p 'shovqin' tushadi;")
-print("bo'lak chegarasi jumlani kesib qo'ysa (overlap=0), u hech bir bo'lakda to'liq bo'lmaydi -> recall pasayadi.")
-
-fig, ax = plt.subplots(figsize=(8, 3.5)); names = list(STRATS); x = np.arange(len(names))
-for j, m in enumerate(("BM25", "TF-IDF(char)", "Gibrid RRF")):
-    ax.bar(x + (j - 1) * 0.27, [table[(n, m)] for n in names], 0.27, label=m)
-ax.set_xticks(x); ax.set_xticklabels(names, fontsize=8); ax.set_ylabel("MRR"); ax.set_ylim(0, 1.05); ax.legend(fontsize=8)
-ax.set_title("Bo'laklash strategiyasi va qidiruv usuli"); plt.tight_layout()
-print("\nIzoh: real RAG'da TF-IDF o'rniga zich (dense) embedding modeli (masalan, bge-m3) va vektor baza ishlatiladi;")
-print("BM25 + dense gibridi va qayta tartiblovchi (reranker) odatda eng barqaror natija beradi.")
+        ...
+# TODO 7: eng yuqori MRR va eng tejamkor (MRR / kontekst so'zlari) kombinatsiyani "Eng yaxshi MRR:" bilan chiqaring

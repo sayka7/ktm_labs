@@ -1,6 +1,7 @@
 # A4. Edge AI va Cloud AI platformalarida sun'iy intellekt tizimlarini joylashtirish
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A4_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz inferens modelini xizmat sifatida joylashtirish zanjirini jarayon ichida bajarasiz: FastAPI xizmati (/healthz, /readyz, /predict, /metrics) `TestClient` bilan sinaladi va yuklama ostida o'lchanadi, Dockerfile va Kubernetes manifestlari (Deployment/Service/HPA/ConfigMap) `pyyaml` bilan tahlil qilinib muhandislik qoidalariga tekshiriladi, HPA avtomasshtablash navbat modeli bilan simulyatsiya qilinadi, Cloud/Edge/Gibrid arxitekturalar TCO va kechikish kalkulyatori bilan solishtiriladi. Real labdan farqi: Docker/minikube/Jetson/Coral yo'q — konteyner va klaster o'rniga jarayon ichidagi xizmat va simulyatsiya; model — A3 dagi digits MLP (ONNX).
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Kichik MLP ONNX'ga eksport qilinadi va FastAPI xizmatiga o'raladi: `lifespan` ichida model yuklanadi va isitiladi, `/healthz` (liveness) va `/readyz` (readiness) ajratilgan, `/predict` JSON so'rovni qabul qilib top-3 va vaqt taqsimotini (preprocess/inference) qaytaradi, `/metrics` Prometheus matn formatida so'rovlar, xatolar, kechikish kvantillarini beradi. TestClient model yuklanmasdan oldin (`/readyz` → 503) va keyin (`with` blok) chaqiriladi.
 
-Fayl: `s1_1_qadam_fastapi_inferens_xizmati_probela.py` — ishga tushirish: `python3 s1_1_qadam_fastapi_inferens_xizmati_probela.py`
+Fayl: `s1_1_qadam_fastapi_inferens_xizmati_probela.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_fastapi_inferens_xizmati_probela.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Pod endi yaratilgan, lekin model hali yuklanmagan. Bu paytda K8s jarayonni o'ldirmasligi, lekin unga trafik ham yubormasligi uchun nechta va qanday tekshiruv yo'li kerak?
+2. Nega modelni har /predict chaqiruvida emas, xizmat ishga tushganda bir marta yuklash kerak? Birinchi so'rov nega sekin bo'lishi mumkin va buni qanday oldini olasiz?
+3. Mijoz 0..16 oralig'idagi 64 piksel yuboradi, model esa o'qitishda qanday masshtabdagi kirishni ko'rgan? Kirish shakli (shape) qanday bo'lishi kerak?
+4. /predict ichidagi vaqtni qaysi nuqtalarda o'lchasangiz, oldindan ishlov va sof inferens ulushini ajrata olasiz? Top-3 ni logitlardan qanday olasiz?
+5. Prometheus counter, gauge va summary turlari nimasi bilan farq qiladi? So'rovlar soni, xatolar, kechikish kvantillari va tayyorlik qaysi turga mos?
+6. Xizmatingiz to'g'ri ishlayotganini qanday raqamlar tasdiqlaydi: /readyz oldin va keyin qanday kod qaytarishi, 200 namunada aniqlik qancha atrofida, 3 pikselli so'rov qanday kod olishi kerak?
 
 Kutilgan natija: Yuklanmasdan oldin /readyz 503, /healthz 200; keyin 200; 5 namunadan 4–5 tasi to'g'ri, 200 namunada ~90 % aniqlik; noto'g'ri so'rovlar 422; /metrics matni.
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 `hey -c N` o'rniga `ThreadPoolExecutor` bilan 1, 2, 4, 8, 16 parallel mijoz simulyatsiya qilinadi: throughput, p50/p95/p99 va Little qonuni (N = X·R) tekshiriladi; to'liq kechikish ichidagi sof inferens ulushi ko'rsatiladi; 64 ta alohida so'rov va bitta paketli so'rov solishtiriladi; p95 ≤ 50 ms SLO tekshiriladi. Grafik: throughput va kechikish.
 
-Fayl: `s2_2_qadam_yuklama_sinovi_ketma_ket_va_para.py` — ishga tushirish: `python3 s2_2_qadam_yuklama_sinovi_ketma_ket_va_para.py`
+Fayl: `s2_2_qadam_yuklama_sinovi_ketma_ket_va_para.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_yuklama_sinovi_ketma_ket_va_para.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Yuklama sinovida 'o'rtacha kechikish' nega yetarli emas? p95 va p99 foydalanuvchi tajribasi haqida nimani aytadi?
+2. Ketma-ket rejimda (c=1) throughput va kechikish orasida qanday oddiy bog'lanish bor? Sof inferens 0,1 ms bo'lsa, qolgan ~2 ms qayerga ketadi?
+3. Parallel mijozlarni qanday simulyatsiya qilasiz va throughput'ni nimaga bo'lib hisoblaysiz: har so'rov vaqtiga yoki butun to'plam devor-soati (wall time) ga?
+4. Little qonuni N = X·R. Bu yerda X va R nima? Agar hisoblangan N mijozlar sonidan ancha kichik chiqsa, bu nimani bildiradi?
+5. Nega 64 rasmni bitta paketli so'rovda yuborish 64 ta alohida so'rovdan bir necha o'n marta tez? Paketlashning narxi nima?
+6. 2 yadroli sandbox'da mijozlar 1 dan 16 gacha oshganda throughput va p99 qanday o'zgarishini kutasiz? p95 ≤ 50 ms SLO qaysi c dan buzilishi mumkin?
 
 Kutilgan natija: c=1: p50 ~2–3 ms, ~400 so'rov/s (sof inferens 0,1 ms — qolgani HTTP/JSON); throughput 2 yadroda to'yinadi, p99 mijozlar bilan chiziqli o'sadi; paket 20–30x tezroq.
 
@@ -43,7 +62,16 @@ Tajriba qilib ko'ring:
 
 Docker bo'lmagani uchun Dockerfile matni dasturiy tahlil qilinadi: ko'p bosqichli qurish, qotirilgan versiya, yengil asos, root bo'lmagan USER, pip/apt kesh, HEALTHCHECK, EXPOSE, exec CMD, qatlamlar tartibi, ENV sozlamalar — 11 qoida. Yaxshi (slim + ONNX Runtime) va yomon (pytorch:latest, root) variantlar solishtiriladi; tasvir hajmi, tortish vaqti va 20 tugunli klasterga tarqatish hajmi baholanadi.
 
-Fayl: `s3_3_qadam_dockerfile_tahlili_va_tasvir_haj.py` — ishga tushirish: `python3 s3_3_qadam_dockerfile_tahlili_va_tasvir_haj.py`
+Fayl: `s3_3_qadam_dockerfile_tahlili_va_tasvir_haj.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_dockerfile_tahlili_va_tasvir_haj.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Ko'p bosqichli (multi-stage) qurishda yakuniy tasvirga qaysi bosqich kiradi? Shuning uchun USER, HEALTHCHECK, CMD qoidalarini qaysi satrlar bo'yicha tekshirish kerak?
+2. 'pytorch/pytorch:latest' nega ikki qoidani birdan buzadi? Versiya qotirilmaganini matndan qanday aniqlaysiz (tegsiz tasvirni ham hisobga oling)?
+3. Qatlam keshi nuqtai nazaridan requirements.txt ni nega ilova kodidan OLDIN ko'chirish kerak? Buni satr indekslari bilan qanday tekshirasiz?
+4. CMD ning shell shakli (CMD uvicorn ...) va exec shakli (CMD ["uvicorn", ...]) farqi nima — SIGTERM qaysi jarayonga yetib boradi?
+5. Tasvir hajmi MB da bo'lsa, 100 Mbit/s tarmoqda tortish vaqti qanday hisoblanadi? 20 tugunli klasterga tarqatishda jami necha GB ko'chadi?
+6. Natijangiz to'g'riligini qanday tekshirasiz: yaxshi va yomon variant qancha ball olishi, hajmlar nisbati qancha atrofida bo'lishi kerak?
 
 Kutilgan natija: Yaxshi variant 11/11, yomon 1/11; hajm bahosi ~270 MB vs ~8 GB (30x); 100 Mbit/s da tortish 22 s vs 11 daqiqa.
 
@@ -57,7 +85,17 @@ Tajriba qilib ko'ring:
 
 Deployment/ConfigMap/Service/HPA YAML'i `yaml.safe_load_all` bilan o'qilib 18 qoida bo'yicha tekshiriladi: replicas ≥ 2, selector/label mosligi, requests/limits, readiness va liveness farqi va vaqtlari, runAsNonRoot, RollingUpdate maxUnavailable 0, Service port/selector mosligi, HPA min/max/behavior/target, Prometheus annotatsiyalari. Tipik xatolar bilan yozilgan ikkinchi manifest 2/18 oladi. HPA chegarasi millicore'da hisoblanadi.
 
-Fayl: `s4_4_qadam_kubernetes_manifestlari_pyyaml_b.py` — ishga tushirish: `python3 s4_4_qadam_kubernetes_manifestlari_pyyaml_b.py`
+Fayl: `s4_4_qadam_kubernetes_manifestlari_pyyaml_b.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_kubernetes_manifestlari_pyyaml_b.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bir YAML matnida '---' bilan ajratilgan bir nechta ob'ekt bor. Ularni qanday o'qib, kind bo'yicha (Deployment, Service, HPA, ConfigMap) tez topiladigan qilasiz?
+2. CPU qiymati '1500m' yoki '2' ko'rinishida yozilishi mumkin. Ularni solishtirish uchun qanday yagona birlikka keltirasiz?
+3. Deployment selector.matchLabels va Pod template labellari, Service selector va Pod labellari mos kelmasa nima bo'ladi? Xatoli manifestda qaysi biri buzilgan?
+4. Readiness va liveness probe'lar nega har xil yo'lda bo'lishi va liveness kechroq boshlanishi kerak? Model 20 s yuklansa, liveness 2 s dan boshlansa nima bo'ladi?
+5. 18 qoidani qismlarga qanday bo'lasiz: Deployment (replicas, resurslar, xavfsizlik, strategiya), Service, HPA, monitoring? Har biri uchun manifestdagi qaysi kalitga qaraysiz?
+6. HPA averageUtilization 60 % — bu nimaga nisbatan foiz: limits'gami yoki requests'gami? 1500m requests bilan chegara necha millicore?
+7. Natijani qanday tekshirasiz: to'g'ri va xatoli manifest necha ball olishi, 2 nusxa 95 % yuklamada HPA nechta nusxaga chiqarishi kerak?
 
 Kutilgan natija: To'g'ri manifest 18/18 PASS, xatoli 2/18; requests 1500m × 60 % = 900m chegara; 2 nusxa 95 % da → 4 nusxa.
 
@@ -71,7 +109,17 @@ Tajriba qilib ko'ring:
 
 Minikube o'rniga diskret-vaqtli simulyatsiya: so'rov oqimi λ(t) (40 → 340 → 40 so'rov/s), har nusxa sig'imi μ = 1000/14 ms, CPU foizi = λ/(R·μ), HPA har 15 s da `ceil(R·cpu/nishon)` hisoblaydi, scaleUp/scaleDown stabilizatsiya oynalari va Pod start vaqti (20 s) hisobga olinadi, navbat va p95 kechikish Little qonuni bilan baholanadi. 7 ta konfiguratsiya (nishon 40/60/80 %, minReplicas 4, sekin start 60 s, maxReplicas 3, oynasiz) SLO buzilish vaqti va pod-soniya narxi bo'yicha solishtiriladi.
 
-Fayl: `s5_5_qadam_hpa_avtomasshtablash_simulyatsiy.py` — ishga tushirish: `python3 s5_5_qadam_hpa_avtomasshtablash_simulyatsiy.py`
+Fayl: `s5_5_qadam_hpa_avtomasshtablash_simulyatsiy.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_hpa_avtomasshtablash_simulyatsiy.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bitta nusxa sekundiga nechta so'rovga xizmat qila oladi, agar bitta so'rov 14 ms olsa? 340 so'rov/s cho'qqida 60 % nishon bilan kamida nechta nusxa kerak?
+2. Har soniyada navbat qanday o'zgaradi: kelgan va xizmat ko'rsatilgan so'rovlar orasidagi farq. Navbat manfiy bo'lishi mumkinmi?
+3. Navbatdagi so'rov qancha kutadi? Little qonunini (N = X·R) kutish vaqtini topish uchun qanday aylantirasiz?
+4. HPA har 15 s da yangi nusxa soni tavsiya qiladi. Nega scaleUp uchun oyna ichidagi ENG KICHIK, scaleDown uchun ENG KATTA tavsiya olinadi?
+5. Yangi Pod darhol sig'im bermaydi. Start vaqtini (20 s yoki 60 s) simulyatsiyada qanday ifodalaysiz?
+6. Konfiguratsiyalarni narx bo'yicha qanday solishtirasiz? Pod-soniya nima va narx_nisbati qanday hisoblanadi?
+7. Natijangiz ishonchli ekanini qanday bilasiz: asosiy konfiguratsiyada reaksiya va SLO buzilishi qancha atrofida, minReplicas 4 va maxReplicas 3 qanday natija berishi kerak?
 
 Kutilgan natija: Asosiy konfiguratsiyada reaksiya ~65 s, SLO ~200 s buziladi; minReplicas 4 SLO buzilishini 4x kamaytiradi, narx +23 %; maxReplicas 3 — eng yomon.
 
@@ -85,7 +133,17 @@ Tajriba qilib ko'ring:
 
 A1 SHV ssenariysi (16 kamera, 160 inferens/s, 3 yil) uchun uch arxitektura hisoblanadi: uchdan-uchga kechikish (RTT + navbat + inferens), tarmoq trafigi, mJ/inferens (PUE bilan), TCO (GPU soati, egress, qo'shimcha xizmatlar; Jetson narxi, energiya, texnik xizmat, zaxira). TCO 1/2/3/5 yil, sezgirlik tahlili (kameralar x2/x8, bulut narxi −30 %, hodisa bo'yicha oqim, xizmat narxi, RTT) va kesishish nuqtasi. Jetson/TPU yo'q — bu simulyatsiya, raqamlar o'zgartiriladigan parametrlar.
 
-Fayl: `s6_6_qadam_cloud_vs_edge_vs_gibrid_kechikis.py` — ishga tushirish: `python3 s6_6_qadam_cloud_vs_edge_vs_gibrid_kechikis.py`
+Fayl: `s6_6_qadam_cloud_vs_edge_vs_gibrid_kechikis.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_cloud_vs_edge_vs_gibrid_kechikis.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Ssenariyda sekundiga nechta inferens kerak va 3 yilda necha soat ishlash hisoblanadi? Qaysi xarajatlar vaqtga chiziqli, qaysilari bir martalik?
+2. Bulutda nechta GPU kerak, agar bitta GPU 380 inferens/s bersa, lekin ishonchlilik uchun kamida 2 nusxa talab qilinsa?
+3. 16 kamera × 4 Mbit/s uzluksiz oqim 3 yilda necha GB egress beradi? Mbit/s dan GB ga qanday o'tasiz?
+4. Uchdan-uchga kechikish nimalardan iborat? Edge'da nega RTT yo'q, Cloud'da esa u hal qiluvchi?
+5. mJ/inferensni qanday hisoblaysiz, agar quvvat vattda va yuklama inferens/s da berilgan bo'lsa? Nega bo'sh turgan GPU ham hisobga kiradi?
+6. Sezgirlik tahlilida bitta parametrni o'zgartirib, qolganini saqlash uchun lug'atni qanday birlashtirasiz? Qaysi parametr Cloud/Edge nisbatini eng ko'p o'zgartiradi deb o'ylaysiz?
+7. Natijani qanday tekshirasiz: Cloud TCO Edge'dan necha marta qimmat va kechikish necha marta katta chiqishi kerak? Bulut narxi −30 % nisbatni o'zgartiradimi?
 
 Kutilgan natija: Cloud TCO Edge'dan 30–50 marta qimmat, kechikish ~6 marta katta; bulut narxi −30 % ham nisbatni saqlaydi; grafik: TCO yillar bo'yicha va sezgirlik ustunlari.
 

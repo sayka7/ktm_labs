@@ -30,52 +30,13 @@ Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.3, random_state=0, strat
 gb = GradientBoostingClassifier(n_estimators=150, max_depth=3, random_state=0).fit(Xtr, ytr)
 print(f"Model aniqligi (test): {gb.score(Xte, yte):.3f}")
 
-pi = permutation_importance(gb, Xte, yte, n_repeats=8, random_state=0, scoring="accuracy")
-ex = shap.TreeExplainer(gb); sv = ex.shap_values(Xte); sv = sv[..., 1] if sv.ndim == 3 else sv
-imp = pd.DataFrame({"permutatsion": pi.importances_mean, "perm_std": pi.importances_std, "SHAP_|o'rtacha|": np.abs(sv).mean(0)}, index=X.columns)
-imp = imp.sort_values("SHAP_|o'rtacha|", ascending=False)
+# TODO 1: permutatsion muhimlik (test to'plamida, n_repeats=8, accuracy) va SHAP TreeExplainer |o'rtacha| qiymatlari
+# TODO 2: ikkala muhimlikni bitta jadvalga yig'ib, Kendall tau bilan reyting mosligini hisoblang
 print("\n=== Global muhimlik: permutatsion vs SHAP ===")
-print(imp.round(4).to_string())
-tau, _ = kendalltau(imp["permutatsion"], imp["SHAP_|o'rtacha|"])
-print(f"Reytinglar mosligi (Kendall tau) = {tau:.2f}")
+raise NotImplementedError("TODO 1-2: global muhimlik")
 
-print("\n=== Barqarorlik: 5 ta bootstrap qayta o'qitish, SHAP top-3 ===")
-tops = []
-for b in range(5):
-    idx = rng.integers(0, len(Xtr), len(Xtr))
-    m = GradientBoostingClassifier(n_estimators=150, max_depth=3, random_state=b).fit(Xtr.iloc[idx], ytr[idx])
-    s = shap.TreeExplainer(m).shap_values(Xte.iloc[:300]); s = s[..., 1] if s.ndim == 3 else s
-    top = list(pd.Series(np.abs(s).mean(0), index=X.columns).sort_values(ascending=False).index[:3]); tops.append(top)
-    print(f"  bootstrap {b + 1}: {top}")
-agree = np.mean([set(t) == set(tops[0]) for t in tops])
-print(f"top-3 to'plami mosligi: {agree:.0%}")
-
-print("\n=== Global surrogat: chuqurligi 3 bo'lgan qaror daraxti modelni qanchalik takrorlaydi ===")
-sur = DecisionTreeClassifier(max_depth=3, random_state=0).fit(Xtr, gb.predict(Xtr))
-fid = (sur.predict(Xte) == gb.predict(Xte)).mean()
-print(f"Sodiqlik (fidelity) = {fid:.3f}")
-print(export_text(sur, feature_names=list(X.columns), decimals=2))
-
+# TODO 3: 5 ta bootstrap qayta o'qitishda SHAP top-3 belgilari va ularning mosligi (%)
+# TODO 4: chuqurligi 3 bo'lgan surrogat daraxtni MODEL BASHORATLARIGA o'qitib, sodiqlik (fidelity) va qoidalarni chiqaring
 print("=== Lokal izoh: rad etilgan ariza uchun tushuntirish xati ===")
-proba = gb.predict_proba(Xte)[:, 1]
-i = int(np.argsort(np.abs(proba - 0.35))[0])          # chegara atrofidagi rad etilgan ariza
-xi = Xte.iloc[[i]]; contrib = pd.Series(sv[i], index=X.columns).sort_values()
-print(f"Tasdiqlanish ehtimoli = {proba[i]:.2f} (chegara 0.50) -> RAD ETILDI")
-print("Qarorga eng ko'p salbiy ta'sir qilgan omillar:")
-for k, v in contrib.head(3).items(): print(f"  - {k} = {xi[k].values[0]}  (hissa {v:+.3f} log-odds)")
-print("Kontrfaktual (bitta omilni o'zgartirib tasdiqqa erishish):")
-for feat, grid in [("qarz_yuki_ulushi", np.linspace(xi.qarz_yuki_ulushi.values[0], 0, 41)),
-                   ("kechikishlar_soni", np.arange(xi.kechikishlar_soni.values[0], -1, -1)),
-                   ("oylik_daromad_mln", np.linspace(xi.oylik_daromad_mln.values[0], xi.oylik_daromad_mln.values[0] * 3, 41))]:
-    hit = None
-    for v in grid:
-        z = xi.copy(); z[feat] = v
-        if gb.predict_proba(z)[0, 1] >= 0.5: hit = v; break
-    print(f"  {feat}: {xi[feat].values[0]} -> " + (f"{hit:.3g} bo'lsa tasdiqlanadi" if hit is not None else "bu omil yetarli emas"))
-
-fig, ax = plt.subplots(figsize=(7, 3.5)); y_ = np.arange(len(imp))
-ax.barh(y_ - 0.2, imp["permutatsion"] / imp["permutatsion"].max(), 0.4, label="permutatsion (norm.)")
-ax.barh(y_ + 0.2, imp["SHAP_|o'rtacha|"] / imp["SHAP_|o'rtacha|"].max(), 0.4, label="SHAP (norm.)")
-ax.set_yticks(y_); ax.set_yticklabels(imp.index, fontsize=8); ax.invert_yaxis(); ax.legend(fontsize=8); ax.set_title("Global muhimlik"); plt.tight_layout()
-print("\nIzoh: real tizimda tushuntirish xati yurist va UX mutaxassisi bilan tuziladi; kontrfaktual faqat o'zgartirish")
-print("mumkin bo'lgan (yosh emas) omillar bo'yicha beriladi va izohlar sodiqligi muntazam tekshiriladi.")
+# TODO 5: chegara atrofidagi rad etilgan ariza uchun eng salbiy 3 SHAP hissasi
+# TODO 6: bitta omilni (qarz yuki, kechikishlar, daromad) o'zgartirib tasdiqqa (p >= 0.5) olib keluvchi qiymatni toping

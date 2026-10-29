@@ -42,68 +42,25 @@ class HARNet(nn.Module):
     def forward(self, x):
         return self.head(self.f(x))
 
-def oqit(model, Xtr, ytr, epoxa=5, lr=3e-3):
-    opt = torch.optim.Adam(model.parameters(), lr); lf = nn.CrossEntropyLoss()
-    Xt, yt = torch.tensor(Xtr), torch.tensor(ytr)
-    for _ in range(epoxa):
-        model.train(); perm = torch.randperm(len(Xt))
-        for i in range(0, len(Xt), 64):
-            b = perm[i:i + 64]; opt.zero_grad(); lf(model(Xt[b]), yt[b]).backward(); opt.step()
-    return model.eval()
-
 # Kengroq model (w=64): oqimlararo parallellik sezilishi uchun hisob ko'proq bo'lsin
 torch.onnx.export(HARNet(w=64).eval(), torch.randn(1, 3, 128), "har64.onnx", input_names=["x"], output_names=["logits"],
                   dynamic_axes={"x": {0: "batch"}, "logits": {0: "batch"}}, opset_version=17, dynamo=False)
+
+# TODO 1: sessiya(intra, inter=1, parallel=False) — berilgan oqimlar soni bilan "har64.onnx" uchun ORT sessiyasi
 def sessiya(intra, inter=1, parallel=False):
-    so = ort.SessionOptions(); so.intra_op_num_threads = intra; so.inter_op_num_threads = inter
-    if parallel: so.execution_mode = ort.ExecutionMode.ORT_PARALLEL
-    return ort.InferenceSession("har64.onnx", so, providers=["CPUExecutionProvider"])
+    raise NotImplementedError("TODO 1: SessionOptions bilan sessiya")
 
+# TODO 2: yuklama(sessiyalar, ishchi, batch, jami) — ishchi ta Python oqimi jami // batch chaqiruvni bo'lishib bajaradi
+#         (umumiy hisoblagich lock bilan); p50, p99 (ms) va inf/s ni qaytaring
 def yuklama(sessiyalar, ishchi, batch, jami=1200):
-    """ishchi ta Python oqimi navbatdagi so'rovlarni bajaradi; har ishchi o'z sessiyasini (yoki umumiy sessiyani) ishlatadi."""
-    xb = np.random.randn(batch, 3, 128).astype(np.float32)
-    for s in sessiyalar:
-        for _ in range(20): s.run(None, {"x": xb})
-    lat, lock, hisob = [], threading.Lock(), [0]
-    def ish(k):
-        s = sessiyalar[k % len(sessiyalar)]; mahalliy = []
-        while True:
-            with lock:
-                if hisob[0] >= jami // batch: break
-                hisob[0] += 1
-            a = time.perf_counter(); s.run(None, {"x": xb}); mahalliy.append(time.perf_counter() - a)
-        with lock: lat.extend(mahalliy)
-    t0 = time.perf_counter()
-    with ThreadPoolExecutor(ishchi) as ex: list(ex.map(ish, range(ishchi)))
-    dt = time.perf_counter() - t0; lat = np.array(lat) * 1e3
-    return np.percentile(lat, 50), np.percentile(lat, 99), len(lat) * batch / dt
+    raise NotImplementedError("TODO 2: ko'p oqimli yuklama")
 
-CFG = [("A: 1 sessiya, intra=1, 1 oqim (LATENCY)", lambda: [sessiya(1)], 1),
-       ("B: 1 sessiya, intra=2, 1 oqim", lambda: [sessiya(2)], 1),
-       ("C: 1 umumiy sessiya, intra=1, 2 oqim", lambda: [sessiya(1)], 2),
-       ("D: 2 sessiya x intra=1, 2 oqim (THROUGHPUT)", lambda: [sessiya(1), sessiya(1)], 2),
-       ("E: 1 sessiya, intra=2, 2 oqim (ortiqcha obuna)", lambda: [sessiya(2)], 2)]
-rows = []
-for batch in (1, 32):
-    for nom, f, ish in CFG:
-        p50, p99, X = yuklama(f(), ish, batch, jami=1200 if batch == 1 else 6400)
-        rows.append((batch, nom, p50, p99, X))
-df = pd.DataFrame(rows, columns=["batch", "Konfiguratsiya", "p50, ms", "p99, ms", "inf/s"])
-df["nisbiy_X"] = df["inf/s"] / df.groupby("batch")["inf/s"].transform("first")
+# TODO 3: A–E konfiguratsiyalar ro'yxati: (nom, sessiyalarni yaratuvchi funksiya, ishchi soni)
+CFG = []
+# TODO 4: batch 1 va 32 uchun barcha konfiguratsiyalarni o'lchang, nisbiy throughput qo'shing,
+#         har batch uchun eng yuqori throughput va eng past p50 ni ayting
+raise NotImplementedError("TODO 4: konfiguratsiyalarni o'lchash")
 print("=== Parallellik konfiguratsiyalari (2 yadroli CPU) ===")
-print(df.round(3).to_string(index=False))
-for b in (1, 32):
-    d = df[df.batch == b]; eng = d.loc[d["inf/s"].idxmax()]; tez = d.loc[d["p50, ms"].idxmin()]
-    print(f"batch {b}: eng yuqori throughput — {eng.Konfiguratsiya} ({eng['inf/s']:.0f} inf/s); eng past p50 — {tez.Konfiguratsiya}")
-print("\n=== OpenVINO / TensorRT dagi analoglari ===")
-print(pd.DataFrame([
-    ("intra_op_num_threads", "INFERENCE_NUM_THREADS", "— (GPU ichida avtomatik)"),
-    ("bir nechta sessiya / oqim", "NUM_STREAMS, PERFORMANCE_HINT=THROUGHPUT", "bir nechta execution context + CUDA stream"),
-    ("1 sessiya, 1 oqim", "PERFORMANCE_HINT=LATENCY", "1 context, batch 1"),
-    ("dinamik paket (4-qadam)", "avtomatik paketlash (BATCH:GPU)", "Triton dynamic_batching"),
-], columns=["ONNX Runtime (bu lab)", "OpenVINO", "TensorRT / Triton"]).to_string(index=False))
-print("Qoida: yadrolar sonidan ko'p oqim (intra x ishchi > yadro) — ortiqcha obuna: p99 o'sadi, throughput oshmaydi.")
 
-d = df[df.batch == 32]
-plt.figure(figsize=(7, 3.3)); plt.barh([k.split(":")[0] for k in d.Konfiguratsiya], d["inf/s"], color="tab:green")
-plt.xlabel("inf/s (batch 32)"); plt.title("Parallellik konfiguratsiyalari"); plt.tight_layout()
+# TODO 5: ORT sozlamalarini OpenVINO va TensorRT/Triton analoglari bilan jadvalda bog'lang
+print("\n=== OpenVINO / TensorRT dagi analoglari ===")

@@ -41,62 +41,25 @@ class HARNet(nn.Module):
     def forward(self, x):
         return self.head(self.f(x))
 
-def oqit(model, Xtr, ytr, epoxa=5, lr=3e-3):
-    opt = torch.optim.Adam(model.parameters(), lr); lf = nn.CrossEntropyLoss()
-    Xt, yt = torch.tensor(Xtr), torch.tensor(ytr)
-    for _ in range(epoxa):
-        model.train(); perm = torch.randperm(len(Xt))
-        for i in range(0, len(Xt), 64):
-            b = perm[i:i + 64]; opt.zero_grad(); lf(model(Xt[b]), yt[b]).backward(); opt.step()
-    return model.eval()
+# Kechikish va profil vaznlarga bog'liq emas — bu qadamda model o'qitilmaydi (faqat arxitektura)
 
 # Kechikish va profil vaznlarga bog'liq emas — bu qadamda model o'qitilmaydi (faqat arxitektura)
 model = HARNet().eval(); x1 = torch.randn(1, 3, 128)
-torch.onnx.export(model, x1, "har.onnx", input_names=["x"], output_names=["logits"],
-                  dynamic_axes={"x": {0: "batch"}, "logits": {0: "batch"}}, opset_version=17, dynamo=False)
-m = onnx.load("har.onnx"); onnx.checker.check_model(m)
+
+# TODO 1: modelni "har.onnx" ga eksport qiling (opset 17, kirish "x", chiqish "logits", dinamik batch o'qi) va tekshiring
+raise NotImplementedError("TODO 1: ONNX eksport")
+
+# TODO 2: operatorlar(mm) — grafikdagi tugunlarning op_type bo'yicha sonini lug'at qilib qaytaring
 def operatorlar(mm):
-    s = pd.Series([n.op_type for n in mm.graph.node]).value_counts(); return {k: int(v) for k, v in s.items()}
+    raise NotImplementedError("TODO 2: operatorlarni sanash")
 print("=== ONNX eksport ===")
-print(f"Fayl: {os.path.getsize('har.onnx') / 1024:.1f} KB, tugunlar: {len(m.graph.node)}, operatorlar: {operatorlar(m)}")
 
-# --- Optimallashtirilgan grafikni faylga saqlab, fusion natijasini ko'ramiz (TensorRT «layer fusion» ning CPU analogi)
-rows = []
-xb = np.random.randn(1, 3, 128).astype(np.float32)
-for nom, lv in [("DISABLE_ALL", ort.GraphOptimizationLevel.ORT_DISABLE_ALL), ("BASIC", ort.GraphOptimizationLevel.ORT_ENABLE_BASIC),
-                ("EXTENDED", ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED), ("ALL", ort.GraphOptimizationLevel.ORT_ENABLE_ALL)]:
-    so = ort.SessionOptions(); so.graph_optimization_level = lv; so.intra_op_num_threads = 1
-    so.optimized_model_filepath = f"har_{nom}.onnx"
-    s = ort.InferenceSession("har.onnx", so, providers=["CPUExecutionProvider"])
-    for _ in range(50): s.run(None, {"x": xb})
-    t = []
-    for _ in range(500):
-        a = time.perf_counter(); s.run(None, {"x": xb}); t.append(time.perf_counter() - a)
-    t = np.array(t) * 1e3; om = onnx.load(f"har_{nom}.onnx")
-    rows.append((nom, len(om.graph.node), np.percentile(t, 50), np.percentile(t, 99), ", ".join(f"{k}:{v}" for k, v in operatorlar(om).items())))
+# TODO 3: 4 ta GraphOptimizationLevel uchun sessiya yarating (optimized_model_filepath bilan),
+#         isinish + 500 chaqiruvda p50/p99 ni o'lchang, saqlangan grafikdagi tugunlar va operatorlarni yozing
 print("\n=== Optimallashtirish darajalari (batch 1, 1 oqim) ===")
-print(pd.DataFrame(rows, columns=["Daraja", "Tugun", "p50, ms", "p99, ms", "Operatorlar"]).round(4).to_string(index=False))
-with torch.inference_mode():
-    tt = []
-    for i in range(550):
-        a = time.perf_counter(); model(x1); tt.append(time.perf_counter() - a)
-pt50 = np.percentile(np.array(tt[50:]) * 1e3, 50)
-print(f"Taqqos: PyTorch eager p50 = {pt50:.4f} ms -> ORT ALL {pt50 / rows[-1][2]:.1f} marta tez (Python/dispatcher ustamasi yo'q)")
-print("Izoh: BatchNorm eksportdayoq (eval + constant folding) Conv vazniga qo'shilgan; EXTENDED da Conv+Relu -> FusedConv.")
-print("TensorRT ham xuddi shunday (va kengroq) qatlam birlashtirishni engine qurishda, OpenVINO esa model kompilyatsiyasida bajaradi.")
 
-# --- Profil: qaysi operator qancha vaqt oladi (TensorRT: trtexec --dumpProfile, OpenVINO: benchmark_app -pc analogi)
-so = ort.SessionOptions(); so.enable_profiling = True; so.intra_op_num_threads = 1
-s = ort.InferenceSession("har.onnx", so, providers=["CPUExecutionProvider"])
-xb64 = np.random.randn(64, 3, 128).astype(np.float32)
-for _ in range(100): s.run(None, {"x": xb64})
-prof = s.end_profiling()
-ev = [e for e in json.load(open(prof)) if e.get("cat") == "Node" and e["name"].endswith("_kernel_time")]
-df = pd.DataFrame([(e["args"]["op_name"], e["dur"]) for e in ev], columns=["op", "dur_us"])
-agg = df.groupby("op").dur_us.agg(["sum", "count"]).sort_values("sum", ascending=False)
-agg["ulush"] = agg["sum"] / agg["sum"].sum(); agg["o'rtacha_us"] = agg["sum"] / agg["count"]
+# TODO 4: PyTorch eager p50 bilan ORT ALL p50 ni solishtirib, necha marta tezligini chiqaring
+
+# TODO 5: enable_profiling bilan batch 64 da 100 chaqiruv qiling, profil JSON'dan "_kernel_time" hodisalarini
+#         op_name bo'yicha yig'ib, vaqt ulushini hisoblang va eng og'ir operatorni ayting
 print("\n=== ORT profil (operatorlar bo'yicha, batch 64, 100 chaqiruv) ===")
-print(agg[["count", "o'rtacha_us", "ulush"]].round(3).to_string())
-eng = agg.index[0]
-print(f"Eng og'ir operator: {eng} ({agg.ulush.iloc[0]:.0%}) — optimallashtirishni shundan boshlash kerak (Amdahl qonuni).")
-for f in glob.glob("onnxruntime_profile_*.json"): os.remove(f)

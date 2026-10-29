@@ -34,33 +34,17 @@ def pgd(model, x, y, eps, steps=10):
 
 def saliency(model, x, cls):
     """Bashorat qilingan sinf logitining kirish bo'yicha gradienti moduli (8x8)."""
-    x = x.clone().detach().requires_grad_(True)
-    logit = model(x)[torch.arange(len(x)), cls].sum()
-    grad, = torch.autograd.grad(logit, x)
-    return grad.abs()
+    # TODO 1: har namuna uchun cls sinf logitini tanlab, kirish bo'yicha gradientning modulini qaytaring
+    raise NotImplementedError("TODO 1: saliency")
 
 def entropy(s):
-    p = s / s.sum(1, keepdim=True); return -(p * torch.log(p + 1e-12)).sum(1)
+    # TODO 2: xaritani ehtimollik taqsimotiga normallab, Shannon entropiyasini hisoblang (har namuna uchun)
+    raise NotImplementedError("TODO 2: entropy")
 
 N = 8; x, y = Xte[:N], yte[:N]
 xa = pgd(m, x, y, eps=0.15)
 with torch.no_grad(): p_clean, p_adv = m(x).argmax(1), m(xa).argmax(1)
 s_clean, s_adv = saliency(m, x, p_clean), saliency(m, xa, p_adv)
-corr = torch.tensor([np.corrcoef(s_clean[i].numpy(), s_adv[i].numpy())[0, 1] for i in range(N)])
+# TODO 3: har namuna uchun toza va adv xaritalar Pearson korrelyatsiyasini hisoblang
 print("=== Saliency xaritasi: toza vs adversarial (eps=0.15) ===")
-print(f"{'#':>2s} {'haqiqiy':>7s} {'toza':>5s} {'adv':>4s} {'korr(toza,adv)':>15s} {'entropiya toza':>15s} {'entropiya adv':>14s}")
-for i in range(N):
-    print(f"{i:2d} {y[i].item():7d} {p_clean[i].item():5d} {p_adv[i].item():4d} {corr[i]:15.3f} {entropy(s_clean)[i]:15.3f} {entropy(s_adv)[i]:14.3f}")
-print(f"O'rtacha korrelyatsiya={corr.mean():.3f}; o'rtacha entropiya: toza={entropy(s_clean).mean():.3f}, adv={entropy(s_adv).mean():.3f}")
-print("Kuzatuv: hujumdan keyin xarita 'ko'chadi' (korrelyatsiya past) — tushuntirishning o'zi ham hujumga zaif;")
-print("xarita tarqoqligi (entropiya) adversarial namunani aniqlash belgisi sifatida ishlatilishi mumkin.")
-
-fig, ax = plt.subplots(4, N, figsize=(1.6 * N, 6.8))
-for i in range(N):
-    ax[0, i].imshow(x[i].view(8, 8), cmap="gray"); ax[0, i].set_title(f"toza: {p_clean[i].item()}", fontsize=9)
-    ax[1, i].imshow(s_clean[i].view(8, 8), cmap="hot")
-    ax[2, i].imshow(xa[i].view(8, 8), cmap="gray"); ax[2, i].set_title(f"adv: {p_adv[i].item()}", fontsize=9)
-    ax[3, i].imshow(s_adv[i].view(8, 8), cmap="hot")
-for a in ax.flat: a.axis("off")
-for r, t in enumerate(("toza rasm", "saliency (toza)", "adversarial rasm", "saliency (adv)")): ax[r, 0].set_ylabel(t)
-plt.suptitle("Gradient-saliency: toza va PGD (eps=0.15) namunalar"); plt.tight_layout()
+# TODO 4: jadval (haqiqiy, toza, adv bashorat, korr, entropiyalar) va "O'rtacha korrelyatsiya=..." qatori; 4 qatorli panel rasmi

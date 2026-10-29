@@ -38,37 +38,18 @@ def fgsm(model, x, y, eps):
 
 def train(adv=False, steps=300, k=5):
     """adv=True: har qadamda avval PGD-k bilan adversarial paket yasaladi, model aynan unda o'qitiladi (min-max)."""
-    m = new_model(); opt = torch.optim.Adam(m.parameters(), lr=3e-3)
-    t0 = time.time()
-    for _ in range(steps):
-        x = pgd(m.eval(), Xtr, ytr, EPS_TRAIN, steps=k) if adv else Xtr
-        m.train(); opt.zero_grad(); F.cross_entropy(m(x), ytr).backward(); opt.step()
-    return m.eval(), time.time() - t0
+    # TODO 1: model va Adam yarating, vaqtni o'lchang
+    # TODO 2: har qadamda adv bo'lsa PGD-k (EPS_TRAIN) bilan o'quv paketini yasang (model eval holatida), aks holda Xtr
+    # TODO 3: model.train() holatida shu paketda bir optimizatsiya qadamini bajaring; (model.eval(), vaqt) qaytaring
+    raise NotImplementedError("TODO 1-3: adversarial o'qitish")
 
 def acc(model, x, y):
     with torch.no_grad(): return (model(x).argmax(1) == y).float().mean().item()
 
 clean, t_clean = train(adv=False)
 robust, t_adv = train(adv=True)
-print(f"O'qitish vaqti: toza={t_clean:.1f}s  adversarial(PGD-5)={t_adv:.1f}s  (~{t_adv / t_clean:.0f}x qimmat)")
 EPS = [0.0, 0.05, 0.1, 0.15, 0.2]
 print("=== Toza model vs adversarial o'qitilgan model ===")
-print(f"{'eps':>5s} | {'toza: FGSM':>10s} {'toza: PGD-10':>12s} | {'adv: FGSM':>9s} {'adv: PGD-10':>11s}")
 curves = {k: [] for k in ("toza/FGSM", "toza/PGD", "adv/FGSM", "adv/PGD")}
-for e in EPS:
-    vals = []
-    for name, m in (("toza", clean), ("adv", robust)):
-        torch.manual_seed(1)
-        af = acc(m, fgsm(m, Xte, yte, e) if e else Xte, yte); ap = acc(m, pgd(m, Xte, yte, e) if e else Xte, yte)
-        curves[f"{name}/FGSM"].append(af); curves[f"{name}/PGD"].append(ap); vals += [af, ap]
-    print(f"{e:5.2f} | {vals[0]:10.3f} {vals[1]:12.3f} | {vals[2]:9.3f} {vals[3]:11.3f}")
-print(f"\nMuroza: toza aniqlik {curves['toza/PGD'][0]:.3f} -> {curves['adv/PGD'][0]:.3f}; "
-      f"PGD-10 (eps={EPS_TRAIN}) ostida {curves['toza/PGD'][2]:.3f} -> {curves['adv/PGD'][2]:.3f}")
-print("Kichik va oson to'plamda (digits) adversarial o'qitish regulyarizator vazifasini bajarib, toza aniqlikni")
-print("pasaytirmasligi ham mumkin; CIFAR-10/ResNet kabi real masalalarda toza aniqlik odatda 5-15 bandga tushadi.")
-print("Eslatma: himoya faqat o'qitilgan tahdid modeli (L_inf, eps<=0.1) doirasida; eps=0.2 da yana pasayadi.")
-
-plt.figure(figsize=(6.5, 4))
-for (k, v), st in zip(curves.items(), ("o--", "o-", "s--", "s-")): plt.plot(EPS, v, st, label=k)
-plt.xlabel("epsilon"); plt.ylabel("test aniqligi"); plt.ylim(0, 1.02); plt.grid(alpha=.3); plt.legend()
-plt.title("Adversarial o'qitish ta'siri (digits MLP)"); plt.tight_layout()
+# TODO 4: har eps va har model uchun FGSM va PGD-10 ostidagi aniqlikni curves ga yozing va jadvalni chiqaring
+# TODO 5: "Muroza:" qatori — toza aniqlik va PGD-10 (eps=EPS_TRAIN) ostidagi aniqlik qanday o'zgardi

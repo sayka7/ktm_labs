@@ -1,6 +1,7 @@
 # MT3. Sun'iy intellektga asoslangan zamonaviy kompyuter tizimlari arxitekturalarini (CPU, GPU, TPU, NPU va FPGA) qiyosiy tahlil qilish va ularning AI ilovalaridagi samaradorligini baholash
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT3_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda siz besh xil hisoblash arxitekturasini analitik modellar va simulyatsiyalar orqali solishtirasiz: rasmiy cho'qqi qiymatlari bilan Roofline modeli, TPU sistolik massivining takt darajasidagi simulyatori, FPGA quvuri va fixed-point arifmetikasi, NPU uchun INT8 kvantlash, energiya va TCO kalkulyatori hamda yakuniy ko'p mezonli tanlov matritsasi. Real tezlatkichlar (GPU, TPU, NPU, FPGA) sandbox'da yo'q, shuning uchun ular modellar bilan baholanadi; yagona real o'lchov qurilmasi — 2 yadroli CPU, uning natijalari boshqa arxitekturalarga ekstrapolyatsiya qilinadi. Jadvaldagi barcha narx, quvvat va unumdorlik raqamlari taxminiy.
 
 ## Muhit
@@ -15,7 +16,17 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 CPU (AMD EPYC 9654), GPU (NVIDIA H100 SXM5), TPU (Google TPU v4), NPU (Hailo-8), chekka SoC (Jetson AGX Orin) va FPGA (AMD Alveo U250) uchun ochiq spetsifikatsiyalardagi cho'qqi qiymatlar (INT8/FP16 TOP/s, xotira o'tkazuvchanligi, quvvat) jadvali tuziladi. Har biri uchun ridge nuqtasi (cho'qqi / o'tkazuvchanlik) va TOP/s/Vt hisoblanadi. Keyin 6 ta tipik AI yadrosi (katta GEMM, ResNet conv3x3, BERT FFN, LLM dekod GEMV, depthwise conv, ReLU) uchun arifmetik intensivlik formuladan topiladi va Roofline bo'yicha erishiladigan unumdorlik hamda chegara turi (hisoblash yoki xotira) ko'rsatiladi. Log-log Roofline grafigi chiziladi. Barcha cho'qqi qiymatlari taxminiy — ular avlod, chastota va rejimga qarab o'zgaradi.
 
-Fayl: `s1_1_qadam_arxitekturalar_pasporti_va_roofl.py` — ishga tushirish: `python3 s1_1_qadam_arxitekturalar_pasporti_va_roofl.py`
+Fayl: `s1_1_qadam_arxitekturalar_pasporti_va_roofl.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_arxitekturalar_pasporti_va_roofl.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Roofline modelida qurilmaning qanday ikki «shifti» bor va ular qaysi ustunlardan (int8_tops, bw_gbs) olinadi?
+2. Ridge nuqtasi nimani bildiradi: qaysi arifmetik intensivlikdan boshlab qurilma hisoblash chegarasiga o'tadi? H100 va Hailo-8 da u nega keskin farq qiladi?
+3. M×K va K×N matritsalarni ko'paytirishda nechta amal (ko'paytirish + qo'shish) bajariladi va ideal holda nechta element xotiradan o'tadi?
+4. Konvolyutsiyani GEMM ga o'xshatib qanday hisoblaysiz: amallarga k×k yadro qanday kiradi, baytlarga esa kirish, og'irlik va chiqish tenzorlari qanday? Depthwise da Co qayerga ketadi?
+5. Erishiladigan unumdorlikni qanday topasiz va chegara turi (H yoki X) qaysi shartga qarab aniqlanadi?
+6. Batch=1 da LLM dekodida har token uchun barcha og'irliklarni bir marta o'qish kerak. Unda token/s ni qaysi ikki kattalik belgilaydi?
+7. Natijangizni qanday tekshirasiz: katta GEMM uchun AI ~2700, GEMV uchun ~2 op/bayt chiqdimi? Katta GEMM hamma qurilmada H, GEMV va ReLU esa X bo'ldimi?
 
 Kutilgan natija: Pasport jadvali, AI jadvali (GEMM ~2700, GEMV ~2 op/bayt), Roofline jadvali: katta GEMM hamma joyda H, GEMV/ReLU hamma joyda X; LLM dekod token/s ~ BW/7 GB; grafik.
 
@@ -29,7 +40,16 @@ Tajriba qilib ko'ring:
 
 NumPy'da output-stationary sistolik massiv takt-ma-takt simulyatsiya qilinadi: A satrlari chapdan kechikish (skew) bilan, B ustunlari yuqoridan oqib kiradi, registrlar har taktda siljiydi. Natija A@B bilan aynan mos kelishi, taktlar soni K+R+C-2 formulasiga tengligi va PE foydalanish ulushi tekshiriladi; t=6 dagi diagonal to'lqin fronti ko'rsatiladi. So'ngra TPU v4 ning 128x128 MXU (8 dona, 1,05 GHz = 275 TFLOP/s) uchun weight-stationary analitik model bilan real qatlamlarda (BERT, ResNet, LLM dekod, toq o'lcham) foydalanish va samarali TFLOP/s hisoblanadi.
 
-Fayl: `s2_2_qadam_tpu_sistolik_massivi_takt_daraja.py` — ishga tushirish: `python3 s2_2_qadam_tpu_sistolik_massivi_takt_daraja.py`
+Fayl: `s2_2_qadam_tpu_sistolik_massivi_takt_daraja.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_tpu_sistolik_massivi_takt_daraja.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Output-stationary massivda nima «turib qoladi» va nima oqadi? A va B qaysi tomonlardan, qaysi yo'nalishda harakatlanadi?
+2. A[i, k] va B[k, j] PE(i, j) ga bir vaqtda yetib kelishi uchun i-satr va j-ustun necha takt kechikib kirishi kerak? Bundan oxirgi PE(R-1, C-1) uchun oxirgi taktni qanday chiqarasiz?
+3. Registrlarni bir taktga siljitishni NumPy kesmalari bilan qanday yozasiz va nega .copy() kerak bo'lishi mumkin?
+4. Kirishdagi indeks k = t − i chegaradan tashqarida bo'lsa, PE ga nima berilishi kerak? Faol PE ni qanday aniqlaysiz?
+5. Weight-stationary MXU da bitta 128×128 og'irlik plitkasi uchun necha takt ketadi va K×N matritsa nechta plitkaga bo'linadi?
+6. Natijani qanday tekshirasiz: simulyator xatosi 0 mi, taktlar K+R+C−2 ga tengmi, 16×16 K=256 da foydalanish ~90 % chiqdimi?
 
 Kutilgan natija: Simulyatorda xato 0; K=256 da foydalanish ~90 %; MXU: BERT 4096 token ~94 %, GEMV M=1 ~0,4 %, toq N=130 ~45 %; grafik.
 
@@ -43,7 +63,17 @@ Tajriba qilib ko'ring:
 
 Birinchi qismda 4 bosqichli MAC quvuri vaqt diagrammasi bilan simulyatsiya qilinadi: initiation interval (II) 1, 2, 4 bo'lganda o'tkazuvchanlik qanday tushishi ko'rsatiladi, Alveo U250 (~12288 DSP, 300 MHz) uchun INT16/INT8/FP32 rejimlarda TOP/s bahosi chiqariladi. Ikkinchi qismda digits ustida o'qitilgan MLP 64-32-10 butunlay butun sonli (fixed-point) arifmetikada bajariladi: Qm.n formatlari, to'yinish (saturation), siljitish orqali masshtab va akkumulyator kengligi. Har format uchun aniqlik, SQNR va to'yingan og'irliklar soni jadvalda.
 
-Fayl: `s3_3_qadam_fpga_quvur_pipeline_ii_va_fixed_.py` — ishga tushirish: `python3 s3_3_qadam_fpga_quvur_pipeline_ii_va_fixed_.py`
+Fayl: `s3_3_qadam_fpga_quvur_pipeline_ii_va_fixed_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_fpga_quvur_pipeline_ii_va_fixed_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. 4 bosqichli quvurda har bosqich 1 takt oladi. Agar yangi kirish har II taktda qabul qilinsa, i-kirish qachon boshlanadi va qachon tugaydi?
+2. II=1 da 8 ta kirish necha taktda tugashi kerak va bu quvursiz (har kirish 4 takt, ketma-ket) holatdan necha marta tez?
+3. FPGA ning TOP/s bahosi qaysi omillarga bog'liq: DSP soni, band ulushi, bitta DSP dagi MAC soni, chastota va II qanday birlashadi?
+4. Qm.n formatda haqiqiy sonni butun songa qanday o'tkazasiz va diapazondan chiqqan qiymat bilan nima qilinadi?
+5. x (Q kasr_a) va w (Q kasr_w) ko'paytmasining kasr qismi necha bit bo'ladi? Bias'ni akkumulyatorga qo'shishdan oldin qanday masshtablash kerak, keyingi qatlamga o'tishda esa nima uchun o'ngga siljitish (>>) ishlatiladi?
+6. Akkumulyator kengligi (akk_bit) tor bo'lsa nima yuz beradi? SQNR ni qaysi ikki signaldan hisoblaysiz?
+7. Natijani tekshiring: 16 bitda aniqlik suzuvchi nuqta bilan bir xil (~0,97) chiqdimi? Q0.7 da to'yingan og'irliklar paydo bo'ldimi, 12 bitli akkumulyatorda aniqlik ~0,6 gacha tushdimi?
 
 Kutilgan natija: II=1 da 8 kirish 11 taktda; INT8 packing ~12 TOP/s (taxminiy); 16 bitda aniqlik suzuvchi nuqta bilan bir xil (~0,97), Q0.7 da to'yinish va keskin tushish, 12 bitli akkumulyatorda ~0,6.
 
@@ -57,7 +87,17 @@ Tajriba qilib ko'ring:
 
 Kichik CNN digits ustida o'qitilib, PyTorch eager statik kvantlash (qnnpack) bilan INT8 ga o'tkaziladi: conv+relu birlashtiriladi, per-tensor va per-channel og'irlik kvantlash, 8 va 256 namunali kalibrlash solishtiriladi. Aniqlik, model hajmi va batch 1/64 kechikishi o'lchanadi. So'ng har qatlam og'irliklarining simmetrik INT8 SQNR'i hisoblanadi. Oxirida NPU qo'llamaydigan operatorlar (SiLU, NMS) CPU'ga qaytganda PCIe orqali qatnov kechikishi modellashtiriladi va SiLU -> ReLU almashtirish samarasi ko'rsatiladi.
 
-Fayl: `s4_4_qadam_npu_uchun_int8_kvantlash_aniqlik.py` — ishga tushirish: `python3 s4_4_qadam_npu_uchun_int8_kvantlash_aniqlik.py`
+Fayl: `s4_4_qadam_npu_uchun_int8_kvantlash_aniqlik.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_npu_uchun_int8_kvantlash_aniqlik.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Statik kvantlashda og'irliklardan tashqari yana nima INT8 ga o'tadi va buning uchun nega kalibrlash ma'lumoti kerak?
+2. Model hajmini qanday o'lchaysiz va FP32 → INT8 da u nazariy jihatdan necha marta kamayishi kerak? Nega amalda ~3,5x chiqadi?
+3. Eager rejimida kvantlashning uch bosqichi qaysi tartibda keladi va conv+relu ni birlashtirish (fuse) nima uchun foydali?
+4. Per-tensor va per-channel og'irlik kvantlash farqi nimada? Qaysi biri kanallar diapazoni har xil bo'lganda aniqroq?
+5. Bitta qatlam uchun simmetrik INT8 SQNR ni qanday hisoblaysiz? Masshtab nima bo'ladi va qaysi diapazonga klip qilinadi?
+6. Grafik bo'linishi modelida kechikish nimalardan yig'iladi? Qachon PCIe nusxalash vaqti qo'shiladi?
+7. Natijalaringiz kutilganga mosmi: FP32 va INT8 aniqligi ~0,95, batch=64 da INT8 tezroq, o'tishlar 5 → 3 va kechikish ~3,0 → 2,4 ms?
 
 Kutilgan natija: FP32 va INT8 aniqligi deyarli teng (~0,95), hajm ~3,5x kichik; CPU'da batch=1 da INT8 tez bo'lmasligi mumkin, batch 64 da tezroq; SQNR ~40-47 dB; bo'linish modelida o'tishlar 5 -> 3, kechikish ~3,0 -> 2,4 ms.
 
@@ -71,7 +111,17 @@ Tajriba qilib ko'ring:
 
 Sandbox CPU (2 yadro) uchun haqiqiy Roofline quriladi: xotira o'tkazuvchanligi STREAM triad bilan, amaliy cho'qqi esa eng yaxshi FP32 GEMM bilan o'lchanadi. GEMM 64...1024, GEMV, conv3x3, conv1x1, depthwise va ReLU uchun GFLOP/s, arifmetik intensivlik va Roofline'ga nisbatan samaradorlik jadvali chiqadi. Keyin har yadro samaradorligi saqlanadi deb faraz qilinib, 1-qadam pasportidagi arxitekturalarda kutilgan vaqt (ishga tushirish xarajati bilan) ekstrapolyatsiya qilinadi. Bu — birinchi yaqinlashish, aniq bashorat emas.
 
-Fayl: `s5_5_qadam_real_cpuda_gemm_va_konvolyutsiya.py` — ishga tushirish: `python3 s5_5_qadam_real_cpuda_gemm_va_konvolyutsiya.py`
+Fayl: `s5_5_qadam_real_cpuda_gemm_va_konvolyutsiya.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_real_cpuda_gemm_va_konvolyutsiya.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Nega 1-qadamdagi ishlab chiqaruvchi raqamlari o'rniga sandbox CPU ning cho'qqisini va o'tkazuvchanligini o'zimiz o'lchaymiz? Bu ikki kattalik qaysi testlardan olinadi?
+2. Vaqtni ishonchli o'lchash uchun nima qilish kerak: birinchi chaqiruvlarni hisobga olish kerakmi, o'rtacha yoki median yaxshiroqmi?
+3. Triad a = b + s·c da xotiradan nechta massiv o'tadi? n = 4M float32 bo'lsa, bayt sonini qanday hisoblaysiz?
+4. Conv2d uchun amallar va baytlar formulasini yozing: groups=g (depthwise) bo'lganda Ci qanday o'zgaradi?
+5. Samaradorlik = o'lchangan / roofline. Nima uchun ba'zi yadrolarda u 100 % dan oshib ketishi mumkin?
+6. Ekstrapolyatsiyada FP16/BF16 rejimdagi arxitekturalar uchun bayt soni qanday o'zgaradi va ishga tushirish xarajati (us) kichik yadrolarda qanday rol o'ynaydi?
+7. Natijangizni tekshiring: triad ~20–40 GB/s, GEMM cho'qqisi ~40–60 GFLOP/s oralig'idami? Qiymatlar bundan keskin farq qilsa, qaysi birliklarni tekshirasiz?
 
 Kutilgan natija: Triad ~20-40 GB/s, GEMM cho'qqisi ~40-60 GFLOP/s (mashinaga bog'liq); depthwise samaradorligi < 10 %; ekstrapolyatsiyada kichik yadrolar tezlatkichlarda 5-10 us 'pol'ga uriladi.
 
@@ -85,7 +135,17 @@ Tajriba qilib ko'ring:
 
 ResNet-50 sinfidagi tasnif (~8,2 GOP/tasvir) va 5000 tasvir/s talab uchun har arxitekturada kerakli qurilmalar soni, umumiy quvvat, energiya (mJ/tasvir), CAPEX, elektr xarajati (PUE bilan) va egalik/bulut TCO hisoblanadi; natija bitta mln tasvir narxiga keltiriladi. Elektr narxi bo'yicha sezgirlik, 30 % yuklamada bulut va egalik solishtiruvi hamda chekka stsenariysi (120 tasvir/s, 30 Vt) ko'rib chiqiladi. Narx, quvvat va real foydalanish koeffitsientlari — taxminiy faraz, ular kod boshida o'zgartiriladi.
 
-Fayl: `s6_6_qadam_energiya_samaradorligi_top_s_vt_.py` — ishga tushirish: `python3 s6_6_qadam_energiya_samaradorligi_top_s_vt_.py`
+Fayl: `s6_6_qadam_energiya_samaradorligi_top_s_vt_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_energiya_samaradorligi_top_s_vt_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bitta qurilma sekundiga nechta tasvirni qayta ishlay oladi? Buning uchun cho'qqi TOP/s, real foydalanish koeffitsienti va GOP/tasvir qanday birlashadi?
+2. 5000 tasvir/s talabini qondirish uchun qurilmalar soni nega butun songa yuqoriga yaxlitlanadi? Umumiy quvvatga xost quvvati qanday kiradi?
+3. mJ/tasvir qanday topiladi va nega u TOP/s/Vt bilan teskari bog'liq?
+4. 3 yillik egalik TCO qaysi qismlardan iborat va PUE qayerga kiradi? Bulut TCO esa qanday hisoblanadi?
+5. Narxni «sent / 1 mln tasvir» ga keltirish uchun 3 yilda jami nechta tasvir qayta ishlanadi?
+6. Elektr narxi 4 marta oshsa, qaysi qurilmalarda TCO eng ko'p o'zgaradi? 30 % yuklamada bulut nega afzal bo'lib qoladi?
+7. Chekka stsenariysida (120 tasvir/s, ≤ 30 Vt) qaysi qurilma mos kelishini kutasiz va nega TPU bu yerda umuman nomzod emas?
 
 Kutilgan natija: TOP/s/Vt: NPU ~10, GPU ~2,8, CPU ~0,08; mJ/tasvir NPU ~3,5, GPU ~10, CPU ~470; 24/7 da GPU egaligi bulutdan arzon, 30 % yuklamada bulut afzal; chekkada faqat NPU mos.
 
@@ -99,7 +159,16 @@ Tajriba qilib ko'ring:
 
 Oldingi qadamlar natijalari 6 mezonli jadvalga yig'iladi (unumdorlik, kechikish, energiya, TCO, ekotizim, moslashuvchanlik) va qat'iy cheklovlar (quvvat, internetsiz ishlash) qo'llanadi. Uch ssenariy (data-markaz, chekka kamera, moliya) uchun vaznli yig'indi (WSM) va TOPSIS reytinglari hisoblanadi; Dirichlet taqsimoti bilan vaznlar 2000 marta tebratilib, 1-o'rin barqarorligi baholanadi. Natija issiqlik xaritasi ko'rinishidagi tanlov matritsasi.
 
-Fayl: `s7_7_qadam_yakuniy_tanlov_matritsasi_wsm_to.py` — ishga tushirish: `python3 s7_7_qadam_yakuniy_tanlov_matritsasi_wsm_to.py`
+Fayl: `s7_7_qadam_yakuniy_tanlov_matritsasi_wsm_to.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_yakuniy_tanlov_matritsasi_wsm_to.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Mezonlar turli birliklarda (tasvir/s, ms, mJ, sent, ball) va turli yo'nalishda. Ularni bir-biriga qo'shishdan oldin nima qilish kerak?
+2. Nega unumdorlik, energiya va TCO uchun log-shkala ishlatiladi? GPU ning 84000 tasvir/s qiymati chiziqli shkalada boshqa nomzodlarga nima qiladi?
+3. Qat'iy cheklov (quvvat ≤ 60 Vt, oflayn) WSM ballaridan oldin yoki keyin qo'llanishi kerakmi? Nega?
+4. TOPSIS ning g'oyasi qanday: «ideal» va «anti-ideal» nuqtalar qanday tuziladi va yakuniy ball qaysi nisbat?
+5. Vaznlar sub'ektiv. Ularni Dirichlet bilan tebratish 1-o'rin barqarorligi haqida nima aytadi va konsentratsiya 50 nimani boshqaradi?
+6. Natijani qanday tekshirasiz: data-markaz va moliyada GPU 1-o'rinda (barqarorlik 80–98 %) chiqdimi, chekkada Jetson/NPU va usullar kelishmasligi ko'rindimi?
 
 Kutilgan natija: Data-markaz va moliyada GPU 1-o'rin (barqarorlik 80-98 %), chekkada Jetson/NPU — usullar kelishmasligi ko'rsatiladi; matritsa va grafik.
 

@@ -1,6 +1,7 @@
 # MT5. LLM asosidagi AI tizimlarining muhandislik muammolari: prompt engineering, RAG arxitekturasi, LLM xavfsizligi va hallucination
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT5_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda talaba LLM tizimining asosiy muhandislik qismlarini katta modelsiz, CPU'da qo'lda quradi: BPE tokenizatorini o'qitib kontekst byudjetini hisoblaydi, KV-kesh xotirasini baholaydi, sintetik korporativ bilim bazasida bo'laklash va BM25/TF-IDF qidiruvini recall@k va MRR bilan o'lchaydi, ekstraktiv mini-RAG, hallucination va prompt injection detektorlarini yasaydi hamda prompt shablonlarini regressiya testi bilan baholaydi. Real labdan farqi: internet va haqiqiy LLM yo'q — generator ekstraktiv, LLM xatti-harakati qoidalar bilan simulyatsiya qilinadi; har qadamda «haqiqiy LLM bilan qanday bo'ladi» izohi berilgan. Barcha raqamlar kichik sintetik ma'lumotda olingan va taxminiy.
 
 ## Muhit
@@ -15,7 +16,17 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Byte-Pair Encoding (BPE) algoritmi kichik o'zbekcha va inglizcha korpusda qo'lda o'qitiladi: ikki tokenizator — «inglizcha markazli» (90% inglizcha matn) va «muvozanatli» (50/50). Ko'rilmagan jumlalarda belgi, so'z va BPE tokenlari soni hamda **fertillik** (token/so'z) taqqoslanadi. So'ng 8192 tokenli kontekst oynasida RAG prompti byudjeti hisoblanadi: tizim prompti, suhbat tarixi, javob zaxirasi va bo'laklar sig'imi; shartli narx bo'yicha kunlik xarajat. Talaba merge sonini, korpus nisbatini va CTX/CHUNK_WORDS ni o'zgartirib ko'radi.
 
-Fayl: `s1_1_qadam_tokenizatsiya_bpe_ni_qolda_oqiti.py` — ishga tushirish: `python3 s1_1_qadam_tokenizatsiya_bpe_ni_qolda_oqiti.py`
+Fayl: `s1_1_qadam_tokenizatsiya_bpe_ni_qolda_oqiti.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_tokenizatsiya_bpe_ni_qolda_oqiti.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Tokenizator 'xavfsizligi' so'zini qanday bo'laklarga ajratishi nimaga bog'liq: so'zning o'ziga yoki tokenizator qaysi matnda o'qitilganiga?
+2. BPE ning bitta iteratsiyasida aniq nima sodir bo'ladi: nimani sanaysiz va nimani birlashtirasiz?
+3. Agar eng ko'p uchragan juftlik atigi 1 marta uchrasa, birlashtirishni davom ettirish mantiqlimi?
+4. Ko'rilmagan so'zni kodlaganda merges ro'yxatini qaysi tartibda qo'llash kerak va nega tartib muhim?
+5. Fertillik (token/so'z) ni qanday hisoblaysiz va inglizcha-markazli tokenizatorda o'zbekcha fertillik inglizchadan necha baravar katta chiqishini kutasiz?
+6. 8192 tokenli oynada bo'laklar uchun qancha joy qoladi va 200 so'zli bo'lak o'zbekchada necha tokenga teng?
+7. Agar korpusni 50/50 qilsangiz yoki merge sonini 600 ga oshirsangiz, o'zbekcha fertillik va kunlik narx qanday o'zgaradi?
 
 Kutilgan natija: Inglizcha-markazli tokenizatorda o'zbekcha fertillik inglizchadan ~2 baravar yuqori (bu kichik korpusda raqamlar katta chiqadi, taxminan 5 va 2,6); shu sabab o'zbekcha bo'laklardan promptga ~5 ta, inglizchadan ~12 ta sig'adi. Grafik: merge soni vs fertillik.
 
@@ -29,7 +40,17 @@ Tajriba qilib ko'ring:
 
 KV-kesh formulasi `2 x qatlam x KV_bosh x head_dim x ketma-ketlik x batch x bayt` ochiq e'lon qilingan konfiguratsiyalar (Llama-2-7B MHA, Llama-3-8B va 70B GQA) uchun hisoblanadi: token boshiga KB, 4k/32k/128k kontekstda GB, 2x24 GB GPU'da 8k kontekst bilan nechta so'rov sig'ishi (fp16 va int4 vaznlar). Keyin 4 qatlamli kichik decoder CPU'da KV-kesh bilan va keshsiz generatsiya qilinadi — natija tokenlari bir xilligi va tezlanish o'lchanadi.
 
-Fayl: `s2_2_qadam_kv_kesh_xotira_kalkulyatori_va_k.py` — ishga tushirish: `python3 s2_2_qadam_kv_kesh_xotira_kalkulyatori_va_k.py`
+Fayl: `s2_2_qadam_kv_kesh_xotira_kalkulyatori_va_k.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_kv_kesh_xotira_kalkulyatori_va_k.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Generatsiyada har yangi token uchun oldingi tokenlarning qaysi oraliq natijalari qayta kerak bo'ladi va nega aynan ularni saqlash mumkin?
+2. KV-kesh hajmi qaysi kattaliklarga chiziqli bog'liq? Formuladagi '2' nimani bildiradi?
+3. Llama-2-7B (32 KV bosh) va Llama-3-8B (8 KV bosh, GQA) da token boshiga KB necha baravar farq qilishi kerak? Q boshlar soni formulaga kiradimi?
+4. 2x24 GB GPU'da 70B model fp16 vaznlari bilan nechta so'rovga joy qoladi? Bo'sh joy manfiy chiqsa nima qilasiz?
+5. Kichik decoderda keshni qo'llashda yangi k, v ni qaysi o'q bo'yicha ulash kerak va bitta yangi token uchun causal maska nega shart emas?
+6. Keshli generatsiyada yangi tokenning pozitsiya embeddingi uchun `start` qiymati qanday bo'lishi kerak? Xato bo'lsa natija qanday bilinadi?
+7. Keshsiz generatsiya vaqti yangi tokenlar soniga qanday o'sadi, keshli esa qanday? 256 tokenda taxminan qancha tezlanish kutasiz?
 
 Kutilgan natija: GQA (8 KV bosh) KV-keshni MHA ga nisbatan 4 baravar kamaytiradi (128 vs 512 KB/token); 70B fp16 2x24 GB ga sig'maydi. Kichik decoderda KV-kesh 256 token uchun ~10x tezlanish beradi (CPU'ga qarab o'zgaradi).
 
@@ -43,7 +64,17 @@ Tajriba qilib ko'ring:
 
 6 hujjatli sintetik korporativ bilim bazasi (24 fakt + 24 chalg'ituvchi jumla + umumiy shovqin) yasaladi. Olti bo'laklash strategiyasi (so'z oynasi 40/80/160, overlap bilan va siz; 2 va 4 jumlali) va uch qidiruv usuli — qo'lda yozilgan Okapi BM25 (sodda o'zbekcha qo'shimcha kesish bilan), char n-gram TF-IDF va Reciprocal Rank Fusion — taqqoslanadi. Har savol uchun oltin jumlani to'liq saqlagan bo'lak o'rni bo'yicha recall@1/3/5, MRR va top-3 kontekst hajmi (so'z) hisoblanadi.
 
-Fayl: `s3_3_qadam_bolaklash_chunking_va_qidiruv_bm.py` — ishga tushirish: `python3 s3_3_qadam_bolaklash_chunking_va_qidiruv_bm.py`
+Fayl: `s3_3_qadam_bolaklash_chunking_va_qidiruv_bm.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_bolaklash_chunking_va_qidiruv_bm.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu bosqichda 'to'g'ri topildi' deb nimani hisoblaymiz: bo'lakda javob soni borligini yoki oltin jumla to'liq borligini? Bu tanlov natijaga qanday ta'sir qiladi?
+2. Overlap 0 va 40 so'zli oynada nega recall@5 ~0,83 da qoladi, overlap 10 qo'shilsa ~1,0 ga chiqadi?
+3. BM25 formulasidagi k1 va b nimani boshqaradi? Uzun bo'lakda so'z ko'p uchrasa ball cheksiz o'saveradimi?
+4. Nega so'z bo'yicha BM25 dan tashqari char n-gram TF-IDF ham sinaladi? O'zbekcha qo'shimchalar ('ta'tilga', 'ta'til') bunga qanday aloqador?
+5. Ikki usul ballari turli shkalada bo'lsa (BM25 ~10, kosinus ~0,3), ularni qanday birlashtirasiz? Nega ballarning o'zi emas, o'rni ishlatiladi?
+6. MRR qanday hisoblanadi va topilmagan savol unga qanday hissa qo'shadi? recall@k dan qanday farqi bor?
+7. Katta bo'laklar MRR=1 beradi, lekin top-3 kontekst ~390 so'z. Qaysi strategiyani 'eng tejamkor' deysiz va buni qanday raqam bilan ifodalaysiz?
 
 Kutilgan natija: Overlapsiz 40 so'zli bo'laklarda recall@5 ~0,83 (jumla kesiladi); overlap qo'shilsa ~1,0. Katta bo'laklar MRR=1 beradi, lekin top-3 kontekst ~390 so'z; 2 jumlali bo'laklar ~40 so'zda MRR ~0,9 — eng tejamkor.
 
@@ -57,7 +88,17 @@ Tajriba qilib ko'ring:
 
 To'liq RAG zanjiri yig'iladi: 3 jumlali bo'laklar, TF-IDF qidiruv, top-k bo'lak jumlalaridan savolga eng o'xshashini tanlovchi **ekstraktiv generator** (son so'ralsa sonli jumlaga bonus). Javobsiz 6 ta savol qo'shilib, rad etish chegarasi `tau` to'ri bo'yicha to'g'ri javob, noto'g'ri javob, asossiz rad va to'g'ri rad soni hisoblanadi. Oxirida haqiqiy LLM'ga yuboriladigan prompt (rol, tayanish ko'rsatmasi, manba identifikatorlari) chop etiladi.
 
-Fayl: `s4_4_qadam_mini_rag_qidiruv_prompt_yigish_e.py` — ishga tushirish: `python3 s4_4_qadam_mini_rag_qidiruv_prompt_yigish_e.py`
+Fayl: `s4_4_qadam_mini_rag_qidiruv_prompt_yigish_e.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_mini_rag_qidiruv_prompt_yigish_e.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bizda katta LLM yo'q. Unda 'generator' sifatida nima ishlatiladi va bunday ekstraktiv javobning afzalligi va cheklovi nimada?
+2. Qidiruv va jumla tanlash uchun bitta TF-IDF vektorizatorni nimalar ustida o'qitish kerak, toki jumla vektorlari ham bir xil fazoda bo'lsin?
+3. Savolda 'necha', 'qancha' kabi so'z bo'lsa, nega sonli jumlaga kichik bonus berish foydali? Bu qanday xatoga olib kelishi mumkin?
+4. k (bo'laklar soni) ni 1 dan 5 ga oshirsangiz, to'g'ri javoblar ulushi doim o'sadimi? Nega?
+5. Javobsiz savolga tizim nima qilishi kerak va buni qaysi kattalik bilan boshqarasiz? Chegarani juda baland qo'ysangiz nima bo'ladi?
+6. Umumiy aniqlikni qanday hisoblaysiz: javobli savollarda nima 'to'g'ri', javobsizlarda nima 'to'g'ri' hisoblanadi? tau ~0,3 da qancha kutasiz?
+7. Haqiqiy LLM ga yuboriladigan promptda qaysi qismlar gallyutsinatsiyani kamaytiradi va javobni tekshirib bo'ladigan qiladi?
 
 Kutilgan natija: Javobli savollarda aniqlik ~0,88; xatolar chalg'ituvchi jumlalardan («Kichik summali xaridlar…»). tau ~0,3 da umumiy aniqlik ~0,8; ba'zi javobsiz savollarga baribir noto'g'ri jumla qaytadi — leksik o'xshashlik chegarasining zaifligi.
 
@@ -71,7 +112,17 @@ Tajriba qilib ko'ring:
 
 Har fakt uchun 6 turdagi javob yasaladi: to'g'ri, to'g'ri parafraz, son almashgan, obyekt almashgan, boshqa hujjatdan va to'qib chiqarilgan. Detektor NLI modeli o'rniga uch belgi ishlatadi: mazmunli so'zlar qamrovi, sonlar mosligi va manbada yo'q bigrammalar ulushi; ular «tayanish balli»ga birlashtiriladi. ROC-AUC (har belgi va birlashgan), chegara bo'yicha precision/recall, turlar kesimida aniqlash ulushi va aralash javobni jumla darajasida belgilash ko'rsatiladi.
 
-Fayl: `s5_5_qadam_hallucination_detektori_javob_ju.py` — ishga tushirish: `python3 s5_5_qadam_hallucination_detektori_javob_ju.py`
+Fayl: `s5_5_qadam_hallucination_detektori_javob_ju.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_hallucination_detektori_javob_ju.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Javob 'manbaga tayanmagan' degani nimani anglatadi? Bizda NLI modeli yo'q — qaysi kuzatiladigan belgilar bunga ishora qilishi mumkin?
+2. Parol muddati '90' o'rniga '95' deb yozilgan javobda so'z qamrovi baribir yuqori chiqadi. Qaysi belgi bu xatoni ushlaydi va uni ballga qanday qo'shasiz?
+3. Yangi bigrammalar ulushi nimani o'lchaydi va nega parafrazlarda u biroz oshadi?
+4. Detektorni baholash uchun ijobiy (gallyutsinatsiya) va salbiy misollarni qanday yasaysiz? Qaysi tur eng qiyin bo'lishi mumkin?
+5. ROC-AUC ni hisoblaganda ball yo'nalishi muhim: yuqori 'tayanish balli' ijobiy klassga mos keladimi yoki teskarisi?
+6. Chegara 0,6 da son almashganlarning qancha qismi, obyekt almashganlarning qancha qismi va parafrazlarning qancha qismi 'asossiz' deb belgilanishini kutasiz?
+7. Nega butun javobni emas, har jumlani alohida tekshirish foydali? Aralash javobda nimani ko'rishni kutasiz?
 
 Kutilgan natija: Birlashgan ball AUC ~0,98; son almashganlarning ~94% aniqlanadi, obyekt almashganlarning faqat ~1/3 qismi (so'zlar boshqa hujjatda emas, shu hujjatda ham uchrashi mumkin); parafrazlarning ~8% noto'g'ri «asossiz» deb belgilanadi.
 
@@ -85,7 +136,17 @@ Tajriba qilib ko'ring:
 
 Besh oila (unut/ignore, tizim promptini so'rash, rol o'yini, bilvosita — hujjat ichida, niqoblangan) va 6 maqsaddan iborat sintetik injection'lar hamda zararsiz va «qiyin zararsiz» (o'xshash so'zli) so'rovlar yasaladi. Regex qoidalar, char n-gram TF-IDF + logistik regressiya va ularning OR birikmasi (A) tasodifiy bo'linishda, (B) ko'rilmagan oila va ko'rilmagan maqsadda baholanadi. Oxirida bilim bazasi jumlalariga yashirilgan bilvosita injection skanerlanadi.
 
-Fayl: `s6_6_qadam_prompt_injection_detektori_qoida.py` — ishga tushirish: `python3 s6_6_qadam_prompt_injection_detektori_qoida.py`
+Fayl: `s6_6_qadam_prompt_injection_detektori_qoida.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_prompt_injection_detektori_qoida.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Prompt injection ni oddiy foydalanuvchi so'rovidan nima ajratadi? Bu bosqichda qaysi 5 oila hujum turi bor va 'qiyin zararsiz' so'rovlar nima uchun kerak?
+2. Regex qoidalar qaysi oilalarni yaxshi ushlaydi va qaysilarida (masalan, '1gn0re prev10us', harflar orasida bo'shliq) ojiz qoladi?
+3. Nega so'z emas, char n-gram TF-IDF tanlanadi? Niqoblangan matn va o'zbek/ingliz aralashmasiga bu qanday yordam beradi?
+4. Tasodifiy 70/30 bo'linishda klassifikator F1 ~1,0 berishi nega aldamchi bo'lishi mumkin? Testdagi misollar o'qitishdagilardan qanchalik farq qiladi?
+5. Ko'rilmagan hujumga umumlashtirishni qanday adolatli o'lchaysiz? O'qitish va test to'plamini qaysi ikki o'lchov bo'yicha ajratasiz?
+6. B) sinovda klassifikator recall'i qancha tushishini kutasiz va qoidalar bilan OR birikmasi nima beradi?
+7. Bilvosita injection hujjat ichida yashirilgan bo'lsa, uni qayerda va qachon tekshirish kerak? Skaner zararsiz jumlani ham belgilasa nima qilasiz?
 
 Kutilgan natija: Tasodifiy bo'linishda klassifikator F1 ~1,0 (aldamchi!), ko'rilmagan oila+maqsadda uning recall'i 0–0,25 gacha tushadi; qoidalar ~0,67–1,0, lekin qiyin zararsizlarda FPR ~0,2. Skanerda zaharlangan jumla topiladi, bitta zararsiz jumla ham shubhali chiqadi.
 
@@ -99,7 +160,17 @@ Tajriba qilib ko'ring:
 
 Besh shablon (naiv, rol, tayanish, tayanish+himoya+JSON, ortiqcha uzun) statik linter bilan 7 element (rol, tayanish, rad etish, ajratgich, injection himoyasi, manba, format) bo'yicha tekshiriladi. So'ng 36 holatli regressiya to'plami (24 javobli, 6 javobsiz, 6 zaharlangan kontekst) **LLM simulyatori** orqali yuritiladi: aniqlik, to'g'ri rad, to'qish, injection muvaffaqiyati, manba, JSON format va token narxi; vaznli yakuniy ball hisoblanadi. Simulyator haqiqiy model emas — ko'rsatmalarga bo'ysunishni qoidalar bilan modellashtiradi.
 
-Fayl: `s7_7_qadam_prompt_shablonlari_va_baholovchi.py` — ishga tushirish: `python3 s7_7_qadam_prompt_shablonlari_va_baholovchi.py`
+Fayl: `s7_7_qadam_prompt_shablonlari_va_baholovchi.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_prompt_shablonlari_va_baholovchi.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Prompt shablonini 'yaxshi' deb baholash uchun qanday ikki xil tekshiruv bor: matnning o'zini ko'rib chiqish va uni model bilan sinash. Ular nimasi bilan farq qiladi?
+2. Linter har bir elementni qanday aniqlaydi? Masalan, 'injection himoyasi' bor-yo'qligini shablondagi qaysi so'z ko'rsatadi?
+3. Simulyator injection ga qachon 'bo'ysunadi'? Faqat himoya ko'rsatmasi yetarlimi yoki kontekst ajratgichi ham kerakmi — nega?
+4. Javobsiz savolda tayanish va rad etish ko'rsatmasi bo'lmagan shablon bilan simulyator nima qaytaradi va bu qaysi metrikaga tushadi?
+5. JSON formatdagi javobda to'g'rilikni qanday tekshirasiz? Format buzilsa nima qilasiz?
+6. Yakuniy ballda qaysi metrikalarga qancha vazn berasiz va nega ortiqcha uzun shablon (T5) jarimalanishi kerak?
+7. Qaysi shablon eng yuqori ball olishini kutasiz (taxminan nechchi) va haqiqiy LLM bilan bu natijani bir marta yuritish yetarlimi?
 
 Kutilgan natija: T1/T2 javobsiz savollarning yarmiga to'qilgan javob beradi va injection'ga 100% bo'ysunadi; T3 to'qishni yo'qotadi, lekin injection qoladi; T4 injection 0 va JSON 100% — eng yuqori ball (~84). T5 xuddi T4 natijasini ikki baravar ko'p token bilan beradi.
 

@@ -1,6 +1,7 @@
 # MT1. Sun'iy intellekt asosli mahsulotlar hayot sikli: Netflix, Uber va Amazon misollari tahlili
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT1_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda siz AI mahsulotining to'liq hayot siklini kichik, lekin to'liq ishlaydigan modellarda bosib o'tasiz: muammo ta'rifi va ma'lumot tahlili, Netflix uslubidagi tavsiya tizimi (bias-model, item-kNN, matrix factorization) va uning offline metrikalari, A/B test simulyatsiyasi, Uber uslubidagi talab prognozi va dinamik narx, Amazon uslubidagi ombor joylashuvi va zaxira siyosati, monitoring/drift va qayta o'qitish, nihoyat API xizmat, kanareyka relizi va model kartasi. Real kompaniyalardan farqi: barcha ma'lumotlar sintetik (generator kodi ochiq), o'lchamlar kichik, raqamlar taxminiy — maqsad usul va qaror mantiqini o'rganish.
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 AI mahsulot hayot siklining 8 bosqichi va ularni ushbu ishning qaysi qadami qamrashi jadvalda ko'rsatiladi. So'ngra Netflix uslubidagi sintetik reyting matritsasi yaratiladi (600 foydalanuvchi, 400 film, yashirin didlar, Zipf mashhurlik) va EDA o'tkaziladi: siyraklik, uzun dum, sovuq start xavfi. Ma'lumot **vaqt bo'yicha** bo'linadi (tasodifiy bo'lish kelajakdan ma'lumot sizdiradi) va ikki bazaviy model — global o'rtacha va regulyarizatsiyalangan bias-model — RMSE bo'yicha solishtiriladi. O'zgartirib ko'ring: `lambda`, mashhurlik darajasi 0,9, faollik taqsimoti.
 
-Fayl: `s1_1_qadam_hayot_sikli_xaritasi_sintetik_re.py` — ishga tushirish: `python3 s1_1_qadam_hayot_sikli_xaritasi_sintetik_re.py`
+Fayl: `s1_1_qadam_hayot_sikli_xaritasi_sintetik_re.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_hayot_sikli_xaritasi_sintetik_re.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Hayot siklining 8 bosqichi qaysilar va ularning har biri ushbu ishning qaysi qadamida (s1–s7) bajariladi?
+2. 600×400 matritsada siyraklikni qanday o'lchaysiz va nega ~93% chiqishi kutiladi?
+3. «Uzun dum» ni bitta raqam bilan qanday ifodalash mumkin? Zipf mashhurlik (0,9 daraja) bunda qanday rol o'ynaydi?
+4. Nega ma'lumotni tasodifiy emas, vaqt bo'yicha bo'lish kerak? Testda train'da hech ko'rilmagan foydalanuvchi qolsa nima bo'ladi?
+5. Bias-model r ≈ μ + b_u + b_i da b_i ni qanday baholaysiz va λ (lambda) nimani o'zgartiradi?
+6. Natijani qanday tekshirasiz: global o'rtacha RMSE ~1,09 va bias-model ~0,95 atrofida chiqdimi? λ=10 λ=0 dan yaxshiroqmi, nega?
 
 Kutilgan natija: Siyraklik ~93%, eng mashhur 10% film reytinglarning ~40–45% ini oladi; RMSE: global o'rtacha ~1,09, bias-model ~0,95 (taxminiy). Ikki grafik: uzun dum va faollik.
 
@@ -29,7 +39,17 @@ Tajriba qilib ko'ring:
 
 Item-kNN (o'rtachadan farq bo'yicha kosinus o'xshashlik, K=30) va SGD bilan o'qitiladigan matrix factorization (k=8) quriladi. Reyting bashorati RMSE bilan, top-10 tavsiya esa precision@10, recall@10, katalog qamrovi (coverage) va yangilik (novelty) bilan baholanadi. Muhim saboq: vaqt bo'yicha offline testda foydalanuvchi faqat ko'rgan filmini baholaydi, shuning uchun mashhurlik modeli precision'da kuchli ko'rinadi (offline baholashning mashhurlik siljishi); gibrid model (MF + log mashhurlik) aniqlik va xilma-xillik o'rtasida murosa beradi.
 
-Fayl: `s2_2_qadam_tavsiya_modellari_item_knn_matri.py` — ishga tushirish: `python3 s2_2_qadam_tavsiya_modellari_item_knn_matri.py`
+Fayl: `s2_2_qadam_tavsiya_modellari_item_knn_matri.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_tavsiya_modellari_item_knn_matri.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu qadamda ikki xil vazifa bor: reyting bashorati va top-N tavsiya. Ularning har biri uchun qaysi metrika mos va nega RMSE top-10 sifatini to'liq aytmaydi?
+2. Item-kNN da nega xom reytinglar emas, foydalanuvchi o'rtachasidan farq bilan kosinus o'xshashlik olinadi?
+3. Foydalanuvchi u ning film i ga bahosini qo'shnilar orqali qanday yig'asiz — qaysi filmlar va qanday vaznlar ishtirok etadi?
+4. MF ning SGD qadamida bitta reyting uchun xato e ni hisoblagach bu, bi, P[u], Q[i] qanday yangilanadi? Nega P[u] va Q[i] ni bir vaqtda yangilash muhim?
+5. Top-10 ro'yxatda foydalanuvchi allaqachon ko'rgan filmlar bilan nima qilish kerak va coverage/novelty qanday hisoblanadi?
+6. Nega mashhurlik modeli precision'da (~0,09) MF dan (~0,02) kuchli ko'rinadi, lekin coverage'i ~0,1? Gibrid MF + log(pop) qanday murosa beradi?
+7. Natijani tekshiring: RMSE item-kNN ~1,0, MF ~0,89 chiqdimi? MF o'qitish egri chizig'i epoxalar bo'yicha kamayadimi?
 
 Kutilgan natija: RMSE: item-kNN ~1,0, MF ~0,89; precision@10: mashhurlik ~0,09, gibrid ~0,09, MF ~0,02; coverage: item-kNN ~0,98, mashhurlik ~0,1 (taxminiy). MF o'qitish egri chizig'i.
 
@@ -43,7 +63,16 @@ Tajriba qilib ko'ring:
 
 Offline metrika yakuniy hukm emas — qarorni onlayn A/B test beradi. Simulyatorda har foydalanuvchining «haqiqiy» didi ma'lum, shuning uchun ikki siyosatning (A — mashhurlik, B — xatoli shaxsiy model) haqiqiy CTR farqi oldindan bilinadi. Tajriba 6000 va 40 000 seans bilan o'tkaziladi: ikki proporsiya z-testi, 95% ishonch oralig'i, so'ngra MDE bo'yicha kerakli tanlanma hajmi hisoblanadi. A/A testda 20 marta oraliq natijaga qarash (peeking) I tur xatoni 5% dan ~25% gacha oshirishi va yangilik effekti ko'rsatiladi.
 
-Fayl: `s3_3_qadam_onlayn_tajriba_a_b_test_statisti.py` — ishga tushirish: `python3 s3_3_qadam_onlayn_tajriba_a_b_test_statisti.py`
+Fayl: `s3_3_qadam_onlayn_tajriba_a_b_test_statisti.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_onlayn_tajriba_a_b_test_statisti.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Simulyatorda nega haqiqiy CTR farqini oldindan bila olamiz va real hayotda nega bila olmaymiz? A va B siyosati aniq nimani ko'rsatadi?
+2. Ikki proporsiyani solishtirish uchun qaysi test mos va umumlashtirilgan (pooled) p nima uchun kerak?
+3. Nega 6000 seansda farq ahamiyatsiz chiqishi, 40 000 da esa p < 0,001 bo'lishi mumkin — haqiqiy effekt o'zgardimi?
+4. MDE 10% ni aniqlash uchun har guruhga nechta seans kerak? Formulada z_(1−α/2) va z_(quvvat) qaysi o'rinda turadi?
+5. A/A testda farq yo'q bo'lsa ham, 20 marta oraliq natijaga qarab birinchi p<0,05 da to'xtasak, I tur xato nega 5% dan oshadi?
+6. Yangilik effekti tajriba davomiyligini tanlashga qanday ta'sir qiladi? Natija to'g'riligini qanday tekshirasiz?
 
 Kutilgan natija: Haqiqiy o'sish ~+11%; 6000 seansda farq ahamiyatsiz, 40 000 da p < 0,001; MDE 10% uchun har guruhga ~25 ming seans; peeking soxta g'alabani ~0,05 dan ~0,25 ga oshiradi (taxminiy).
 
@@ -57,7 +86,16 @@ Tajriba qilib ko'ring:
 
 10 haftalik soatlik sintetik safar talabi (kunlik cho'qqilar, juma-shanba kechasi, yomg'ir, tadbirlar, trend) yaratiladi. Uch model — mavsumiy naiv (o'tgan hafta), Ridge (one-hot soat/kun) va gradient boosting — oxirgi haftada MAE/MAPE bilan solishtiriladi. Prognoz asosida dinamik narx (surge) qoidasi qo'llanadi va narx elastikligi bilan bajarilgan/qondirilmagan safarlar va tushum hisoblanadi. Oxirida 400 sintetik haydovchi KMeans bilan segmentlanadi (ish soati, qabul qilish, bekor qilish, reyting).
 
-Fayl: `s4_4_qadam_uber_uslubidagi_misol_talab_prog.py` — ishga tushirish: `python3 s4_4_qadam_uber_uslubidagi_misol_talab_prog.py`
+Fayl: `s4_4_qadam_uber_uslubidagi_misol_talab_prog.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_uber_uslubidagi_misol_talab_prog.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Soatlik talabda qanday takrorlanuvchi naqshlar bor va qaysi belgilar (features) ularni modelga yetkazadi?
+2. Nega oxirgi haftani test qilish kerak va «mavsumiy naiv» bazaviy model aynan nimani bashorat qiladi?
+3. Ridge uchun soat va kunni son sifatida emas, one-hot qilib berish nimani o'zgartiradi? Testdagi ustunlarni train bilan qanday moslaysiz?
+4. MAPE ni hisoblashda talab 0 ga yaqin soatlar qanday muammo tug'diradi? Kutilgan MAPE: naiv ~14%, Ridge ~10%, boosting ~8% — sizda shundaymi?
+5. Surge koeffitsienti prognoz/taklif nisbatiga qanday bog'lanadi va narx oshganda talab hamda haydovchi taklifi qanday o'zgaradi?
+6. Haydovchilarni segmentlashdan oldin nega belgilarni standartlashtirish kerak (ish soati ~36, bekor qilish ~0,07)?
 
 Kutilgan natija: MAPE: naiv ~14%, Ridge ~10%, boosting ~8%; surge qondirilmagan talabni ~4700 dan ~2300 gacha kamaytiradi; uchinchi segment — bekor qilish ~20% bo'lgan muammoli haydovchilar (taxminiy).
 
@@ -71,7 +109,16 @@ Tajriba qilib ko'ring:
 
 300 SKU uchun 120 kunlik sintetik talab bo'yicha ABC tahlili bajariladi. So'ngra 300 joyli omborda tovarlarni joylashtirish (slotting) uch usulda solishtiriladi: tasodifiy, talab bo'yicha saralash va Venger usuli (`linear_sum_assignment`); 3000 buyurtma bo'yicha o'rtacha terish yo'li o'lchanadi. A sinf tovarlari uchun xavfsizlik zaxirasi, qayta buyurtma nuqtasi (ROP) va EOQ hisoblanadi va (s, Q) siyosati barqaror hamda tasodifiy yetkazish muddati bilan simulyatsiya qilinadi.
 
-Fayl: `s5_5_qadam_amazon_uslubidagi_ombor_abc_tahl.py` — ishga tushirish: `python3 s5_5_qadam_amazon_uslubidagi_ombor_abc_tahl.py`
+Fayl: `s5_5_qadam_amazon_uslubidagi_ombor_abc_tahl.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_amazon_uslubidagi_ombor_abc_tahl.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. ABC tahlilida tovarlar nimaning bo'yicha saralanadi — dona soni bo'yicha yoki qiymat bo'yicha? Chegaralar 80% va 95% nimani anglatadi?
+2. Terish yo'lini qisqartirish uchun qaysi tovarlarni stantsiyaga yaqin qo'yish kerak? Tezlik nima uchun faqat birinchi 90 kundan olinadi?
+3. «Talab bo'yicha saralash» ni ikki argsort bilan qanday yozasiz va Venger usuli (linear_sum_assignment) uchun xarajat matritsasi qanday tuziladi?
+4. Nega chiziqli xarajatda saralash va Venger usuli bir xil natija beradi? Tejash ~55% chiqdimi?
+5. Xavfsizlik zaxirasi talab o'zgaruvchanligi σ va yetkazish muddati L ga qanday bog'liq? ROP va EOQ formulalari qanday?
+6. (s, Q) simulyatsiyasida har kuni qanday ketma-ketlik bajariladi va nega tasodifiy yetkazish muddatida fill rate ~1,0 dan ~0,93 ga tushadi?
 
 Kutilgan natija: A sinf: ~17% SKU qiymatning 80% i; talab bo'yicha slotting terish yo'lini ~55% qisqartiradi; tasodifiy yetkazish muddatida fill rate ~1,0 dan ~0,93 ga tushadi (taxminiy). Slotting xaritasi.
 
@@ -85,7 +132,16 @@ Tajriba qilib ko'ring:
 
 14 haftalik reyting oqimi simulyatsiya qilinadi: 8-haftadan katalogga yangi filmlar qo'shiladi va auditoriyaning yarmi qattiqroq baholay boshlaydi. Monitoring panelida har hafta RMSE, baholar va film taqsimoti uchun PSI, bashoratlar uchun KS testi va sovuq start ulushi hisoblanadi. Ogohlantirish qoidasi (PSI > 0,2 yoki RMSE +10%) ishga tushganda model qayta o'qitiladi (yangi hafta + eski ma'lumotning 30%) va monitoring etaloni yangilanadi.
 
-Fayl: `s6_6_qadam_model_monitoringi_drift_psi_ks_h.py` — ishga tushirish: `python3 s6_6_qadam_model_monitoringi_drift_psi_ks_h.py`
+Fayl: `s6_6_qadam_model_monitoringi_drift_psi_ks_h.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_model_monitoringi_drift_psi_ks_h.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu ssenariyda 8-haftadan qanday ikki o'zgarish sodir bo'ladi va ularning qaysi biri kirish (data) drifti, qaysi biri sifat drifti sifatida ko'rinadi?
+2. PSI formulasi qanday va nega gistogramma ulushlariga kichik son (1e-4) qo'shish kerak? 0,1 va 0,2 chegaralari nimani bildiradi?
+3. Baholar (1–5) va film id lari uchun binlarni qanday tanlaysiz? Film bo'yicha PSI 8-haftada nega ~5 gacha sakraydi?
+4. Haqiqiy baholar hali kelmagan bo'lsa, model chiqishining o'zi bo'yicha driftni qanday sezish mumkin?
+5. Ogohlantirish qoidasi ishga tushgach qayta o'qitish uchun qaysi ma'lumotni olasiz va nega monitoring etalonini ham yangilash kerak?
+6. Natijani qanday tekshirasiz: RMSE ~0,70 dan ~0,84 ga oshib, v2 dan keyin ~0,74 ga tushdimi? Nega to'liq 0,70 ga qaytmaydi?
 
 Kutilgan natija: 8-haftada PSI_film ~5 va RMSE ~0,70 dan ~0,84 ga oshadi — DRIFT; qayta o'qitilgan v2 da RMSE ~0,74 ga tushadi (taxminiy). RMSE va PSI grafiklari.
 
@@ -99,7 +155,16 @@ Tajriba qilib ko'ring:
 
 Ikki model versiyasi (v1 — mashhurlik, v2 — MF) FastAPI xizmatiga joylanadi va `TestClient` bilan tekshiriladi (Docker o'rniga jarayon ichidagi xizmat). Kanareyka relizi 0% → 10% → 50% → 100% bosqichlarida foydalanuvchi id xeshi bo'yicha barqaror taqsimlanadi, har bosqichda kechikish va xatolik «qo'riqchi» metrikalari tekshiriladi. Oxirida YAML model kartasi, Netflix/Uber/Amazon misollarining umumiy taqqosi va hayot sikli hisoboti (JSON) yaratiladi.
 
-Fayl: `s7_7_qadam_joylash_va_hujjat_api_xizmat_kan.py` — ishga tushirish: `python3 s7_7_qadam_joylash_va_hujjat_api_xizmat_kan.py`
+Fayl: `s7_7_qadam_joylash_va_hujjat_api_xizmat_kan.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_joylash_va_hujjat_api_xizmat_kan.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Tavsiya xizmati minimal qanday endpointlarga ega bo'lishi kerak va noma'lum foydalanuvchi (sovuq start) kelganda nima qaytariladi?
+2. Kanareyka relizida nega foydalanuvchini har so'rovda tasodifiy emas, id bo'yicha barqaror taqsimlash kerak?
+3. Xizmatni Docker'siz qanday tekshirish mumkin? TestClient qanday kechikish o'lchaydi va real xizmatdan qanday farq qiladi?
+4. Har kanareyka bosqichida qaysi «qo'riqchi» metrikalarga qarab davom etish yoki ortga qaytarish qarori qabul qilinadi?
+5. Model kartasida qaysi bo'limlar bo'lishi shart va raqamlarni qayerdan olasiz?
+6. Hayot sikli hisobotida «Joylash» bosqichining holati qanday aniqlanishi kerak — qo'lda yozilsinmi yoki kanareyka natijasidan?
 
 Kutilgan natija: Barcha bosqichlarda xato 0, p95 ~4 ms (jarayon ichida, tarmoqsiz); YAML model kartasi va 8 bosqichli hisobot jadvali chiqadi (raqamlar taxminiy).
 

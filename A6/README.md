@@ -1,6 +1,7 @@
 # A6. Sun'iy intellekt tizimlarining xavfsizligi va ishonchliligini tahlil qilish
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A6_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada talaba sklearn digits (8x8 rasm) ustida kichik PyTorch MLP'ga FGSM va PGD hujumlarini qo'lda yozadi, aniqlikning epsilon'ga bog'liqlik egri chizig'ini quradi, qisqa adversarial o'qitish bilan mustahkamlikni taqqoslaydi, Grad-CAM o'rniga gradient-saliency xaritasini chizadi, sintetik «kredit» ma'lumotida fairlearn MetricFrame va ThresholdOptimizer bilan adolatlilikni o'lchaydi va tuzatadi, shap TreeExplainer bilan daraxt modelini tushuntiradi hamda 20 bandli etik tekshiruv ro'yxatini avtomatik baholaydi. Real labdan farqi: CIFAR-10/ResNet-18 va Adult o'rniga kichik, tarmoqsiz yuklanadigan ma'lumotlar; torchattacks va grad-cam kutubxonalari yo'q — hujumlar va saliency qo'lda yoziladi (bu o'rganish uchun foydaliroq).
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Digits ma'lumoti [0,1] piksel fazosiga keltiriladi (1 kulrang daraja = 1/16), MLP 300 qadam Adam bilan o'qitiladi (test ~97%). FGSM qo'lda yoziladi: `x + eps*sign(grad)`, [0,1] ga qirqish. 7 ta epsilon uchun aniqlik jadvali va mustahkamlik egri chizig'i chiziladi; shu eps'dagi tasodifiy ±eps shovqin bilan taqqoslanadi. Talaba model chuqurligini, epsilon to'rini va o'qitish qadamlarini o'zgartirib ko'radi.
 
-Fayl: `s1_1_qadam_bazaviy_model_va_fgsm_aniqliknin.py` — ishga tushirish: `python3 s1_1_qadam_bazaviy_model_va_fgsm_aniqliknin.py`
+Fayl: `s1_1_qadam_bazaviy_model_va_fgsm_aniqliknin.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_bazaviy_model_va_fgsm_aniqliknin.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Hujumchi har pikselni ko'pi bilan eps ga o'zgartira oladi (L_inf chegarasi). eps = 0.0625 piksel fazosida nimani anglatadi va nega ma'lumot [0,1] ga keltirilgan?
+2. Yo'qotishni oshirish uchun pikselni qaysi yo'nalishda siljitish kerak? Gradientning faqat ishorasini olish L_inf chegarasi bilan qanday bog'liq?
+3. Model parametrlari emas, kirish bo'yicha gradientni qanday olasiz? x qanday tayyorlanishi kerak?
+4. Buzilgan rasm qiymatlari [0,1] dan chiqib ketsa nima bo'ladi? Natijani grafikdan uzish (detach) nega kerak?
+5. Xuddi shu eps dagi tasodifiy ±eps shovqin aniqlikni qancha tushiradi deb o'ylaysiz? Bu taqqoslash nimani isbotlaydi?
+6. Natijani qanday tekshirasiz: eps = 0.05, 0.1, 0.15 da aniqlik qancha atrofida bo'lishi va tasodifiy shovqin qancha qoldirishi kerak?
 
 Kutilgan natija: eps=0.05 da aniqlik ~0.77, eps=0.1 da ~0.3, eps=0.15 da ~0.1; tasodifiy shovqin eps=0.15 da ~0.93 qoldiradi. Grafik: keskin tushuvchi egri chiziq.
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 PGD: tasodifiy boshlang'ich nuqta, K qadam `alpha*sign(grad)`, har qadimdan keyin eps-sharga proyeksiya va [0,1] qirqish. FGSM, PGD-10 (tasodifiy boshlanish bilan/siz) va PGD-40 bir xil epsilon to'rida solishtiriladi, har hujum uchun L_inf chegarasi `assert` bilan tekshiriladi. Talaba alpha, qadamlar soni va boshlang'ich nuqtaning ta'sirini ko'radi.
 
-Fayl: `s2_2_qadam_pgd_hujumini_qolda_yozish_va_fgs.py` — ishga tushirish: `python3 s2_2_qadam_pgd_hujumini_qolda_yozish_va_fgs.py`
+Fayl: `s2_2_qadam_pgd_hujumini_qolda_yozish_va_fgs.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_pgd_hujumini_qolda_yozish_va_fgs.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. FGSM bitta katta qadam qiladi. Agar yo'qotish sirti egri bo'lsa, bitta qadam nega optimal bo'lmasligi mumkin? PGD bu muammoni qanday hal qiladi?
+2. Bir necha qadamdan keyin buzilish eps dan oshib ketishi mumkin. Har qadamdan keyin nuqtani ruxsat etilgan sohaga qanday qaytarasiz?
+3. Tasodifiy boshlang'ich nuqta nima uchun kerak? Toza nuqtadan boshlansa, gradient nimaga 'yopishib' qolishi mumkin?
+4. Tsikl ichida har qadamda grafik nega uzilishi (detach) va requires_grad qayta yoqilishi kerak? Aks holda nima bo'ladi?
+5. Hujumingiz tahdid modelini buzmaganini qanday kafolatlaysiz? Qaysi kattalikni eps bilan solishtirasiz?
+6. Natijalaringiz to'g'riligini qanday bilasiz: PGD va FGSM orasida qanday tartib kutiladi, eps=0.15 va 0.2 da qanday aniqliklar?
 
 Kutilgan natija: PGD har eps'da FGSM dan past yoki teng aniqlik beradi (eps=0.15: FGSM ~0.11, PGD ~0.05; eps=0.2: PGD ~0.00). Assert o'tadi. 4 egri chiziqli grafik.
 
@@ -43,7 +62,16 @@ Tajriba qilib ko'ring:
 
 Madry uslubi: har qadamda avval PGD-5 (eps=0.1) bilan adversarial o'quv paketi yasaladi, model aynan unda o'qitiladi. Toza va adversarial modellar FGSM/PGD-10 ostida 5 ta eps uchun taqqoslanadi (4 egri chiziq), o'qitish vaqti nisbati chiqadi. Talaba EPS_TRAIN, k va qadamlar sonini o'zgartirib, murozani o'rganadi.
 
-Fayl: `s3_3_qadam_adversarial_oqitish_qisqa_va_mus.py` — ishga tushirish: `python3 s3_3_qadam_adversarial_oqitish_qisqa_va_mus.py`
+Fayl: `s3_3_qadam_adversarial_oqitish_qisqa_va_mus.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_adversarial_oqitish_qisqa_va_mus.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Adversarial o'qitish qanday min-max masala sifatida yoziladi? Ichki 'max' va tashqi 'min' kim tomonidan bajariladi?
+2. Har o'qitish qadamida adversarial paketni qaysi model nusxasi bilan yasash kerak — eski (boshlang'ich) yoki joriy model bilan? Nega?
+3. Bitta adversarial o'qitish qadami toza qadamdan necha baravar qimmat bo'lishini kutasiz, agar PGD-5 ishlatilsa?
+4. Ikkala modelni adolatli taqqoslash uchun nimalar bir xil bo'lishi kerak (boshlang'ich og'irliklar, hujum, urug')?
+5. Himoya eps=0.1 da o'qitilgan bo'lsa, eps=0.2 hujumida nima bo'lishini kutasiz? Bu 'tahdid modeli' tushunchasi haqida nimani aytadi?
+6. Natijani qanday tekshirasiz: o'qitish narxi, PGD-10 eps=0.1 ostidagi aniqlik qanday o'zgarishi kerak?
 
 Kutilgan natija: Adversarial o'qitish ~6x qimmat; PGD-10 eps=0.1 ostida aniqlik ~0.27 dan ~0.83 ga ko'tariladi; eps=0.2 da himoya zaiflashadi (~0.2).
 
@@ -57,7 +85,16 @@ Tajriba qilib ko'ring:
 
 MLP uchun Grad-CAM o'rniga gradient-saliency (|d logit/d x|, 8x8) hisoblanadi. 8 ta test raqami uchun toza rasm, uning saliency xaritasi, PGD (eps=0.15) bilan buzilgan rasm va uning xaritasi 4 qatorli panelda chiziladi; toza/adv xaritalar korrelyatsiyasi va entropiyasi jadvalda. Talaba tushuntirishning hujum ostida «ko'chishini» ko'radi.
 
-Fayl: `s4_4_qadam_gradient_saliency_xaritasi_toza_.py` — ishga tushirish: `python3 s4_4_qadam_gradient_saliency_xaritasi_toza_.py`
+Fayl: `s4_4_qadam_gradient_saliency_xaritasi_toza_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_gradient_saliency_xaritasi_toza_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Saliency xaritasi qaysi savolga javob beradi: 'qaysi piksel kichik o'zgarsa, shu sinf bahosi eng ko'p o'zgaradi?' Bu qaysi hosilaga mos keladi?
+2. 8 ta namuna uchun gradientni bitta autograd chaqiruvi bilan qanday olasiz? Har namunada boshqa sinf logitini qanday tanlaysiz?
+3. Xarita 'tarqoq' yoki 'jamlangan' ekanini qanday son bilan o'lchash mumkin? Entropiya uchun xarita qanday ko'rinishga keltirilishi kerak?
+4. Ikki 64 o'lchamli xaritaning o'xshashligini qanday baholaysiz? Korrelyatsiya ~1, ~0 yoki manfiy bo'lsa nimani anglatadi?
+5. Nega adversarial xarita uchun saliency adv bashorat (p_adv) sinfi bo'yicha olinadi, haqiqiy sinf bo'yicha emas?
+6. Natijangizni qanday baholaysiz: adversarial rasmlar ko'zga qanday ko'rinishi, bashoratlar va o'rtacha korrelyatsiya qancha bo'lishi kerak?
 
 Kutilgan natija: Adversarial rasmlar ko'zga toza bilan deyarli bir xil, lekin bashorat noto'g'ri; saliency korrelyatsiyasi ~0 atrofida (xarita ko'chgan). Panel rasmi.
 
@@ -71,7 +108,16 @@ Tajriba qilib ko'ring:
 
 Sintetik kredit ma'lumotida sezgir atribut A, u bilan bog'liq vakil belgi (income) va tarixiy tarafkashlik (A=1 guruhda ijobiylarning 25% noto'g'ri rad etilgan) modellashtiriladi. Logistik regressiya uchun MetricFrame guruhlar kesimida aniqlik, tanlov ulushi, TPR, FPR beradi; DP va EO farqlari hisoblanadi. To'rt variant taqqoslanadi: A bilan, A siz (unawareness), ThresholdOptimizer DP va EO cheklovlari bilan.
 
-Fayl: `s5_5_qadam_adolatlilik_metricframe_va_thres.py` — ishga tushirish: `python3 s5_5_qadam_adolatlilik_metricframe_va_thres.py`
+Fayl: `s5_5_qadam_adolatlilik_metricframe_va_thres.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_adolatlilik_metricframe_va_thres.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Ma'lumotda tarafkashlik qayerdan paydo bo'lgan: belgilarda, yorliqlarda yoki ikkalasidami? income qanday rol o'ynaydi?
+2. Demographic parity (DP) va equalized odds (EO) farqlari qaysi kattaliklarni guruhlar orasida solishtiradi?
+3. Metrikalarni guruh kesimida bitta jadvalda qanday olasiz? MetricFrame'ga nimalarni berish kerak?
+4. A ni modeldan olib tashlasak, DP farqi yo'qoladimi? Agar yo'q bo'lsa, nima uchun?
+5. Post-processing (ThresholdOptimizer) qanday ishlaydi: model o'zgaradimi yoki faqat qaror chegarasi? Inferensda unga nima qo'shimcha kerak?
+6. Natijalarni qanday tekshirasiz: baza, unawareness va ikki ThresholdOptimizer varianti uchun DP/EO va aniqlik qanday o'zgarishi kerak?
 
 Kutilgan natija: Baza: DP farqi ~0.25, EO ~0.27; A olib tashlanganda DP ~0.13 (proxy orqali saqlanadi); ThresholdOptimizer(DP) DP ni ~0.01 ga, (EO) EO ni ~0.02 ga tushiradi, aniqlik 1-3 bandga pasayadi.
 
@@ -85,7 +131,16 @@ Tajriba qilib ko'ring:
 
 breast_cancer (569x30) ustida GradientBoosting o'qitiladi, TreeExplainer log-odds fazosida SHAP qiymatlarini beradi. Global o'rtacha |SHAP| top-10, bitta namuna uchun top-6 hissalar, additivlik tekshiruvi (bazaviy + sum(SHAP) = decision_function, farq ~1e-15) va 1% shovqinda tushuntirish barqarorligi chiqadi; beeswarm grafigi chiziladi.
 
-Fayl: `s6_6_qadam_shap_treeexplainer_global_muhiml.py` — ishga tushirish: `python3 s6_6_qadam_shap_treeexplainer_global_muhiml.py`
+Fayl: `s6_6_qadam_shap_treeexplainer_global_muhiml.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_shap_treeexplainer_global_muhiml.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Shapley qiymati bitta belgining bashoratga hissasini qanday adolatli taqsimlaydi? TreeExplainer nega daraxt modellari uchun tez va aniq?
+2. GradientBoosting uchun SHAP qiymatlari qaysi fazoda — ehtimollikdami yoki log-odds'dami? Ikki sinfli holatda natija shakli qanday bo'lishi mumkin?
+3. Global muhimlikni lokal SHAP qiymatlaridan qanday yig'asiz? Nega oddiy o'rtacha emas, modul o'rtachasi olinadi?
+4. Lokal aniqlik (additivlik) aksiomasi nimani talab qiladi? Uni bitta namuna uchun qanday tekshirasiz?
+5. Tushuntirish ishonchliligini qanday baholash mumkin? Kirishga har belgining std'siga nisbatan 1 % shovqin qo'shsak, top-5 belgilar o'zgarishi kerakmi?
+6. Natijani qanday tekshirasiz: aniqlik, eng muhim belgilar, additivlik farqi va barqarorlik qancha bo'lishi kerak?
 
 Kutilgan natija: Aniqlik ~0.94; top belgilar: worst perimeter, worst concave points, mean concave points; additivlik farqi ~1e-15; barqarorlik ~0.99.
 
@@ -99,7 +154,16 @@ Tajriba qilib ko'ring:
 
 20 bandli ro'yxat (ISO/IEC 42001, 23894, EU AI Act, NIST AI RMF) skript bilan baholanadi: texnik bandlar (7, 8, 9, 11, 20) skript ichida tez o'lchangan metrikalardan (toza/FGSM aniqlik, DP/EO farqi, urug' va versiyalar) chegaralar bo'yicha avtomatik, tashkiliy bandlar talaba to'ldiradigan DALIL lug'atidan olinadi; dalilsiz «ha» avtomatik «qisman»ga tushiriladi. Umumiy ball /100 va xulosa chiqadi.
 
-Fayl: `s7_7_qadam_etik_tekshiruv_royxatini_avtomat.py` — ishga tushirish: `python3 s7_7_qadam_etik_tekshiruv_royxatini_avtomat.py`
+Fayl: `s7_7_qadam_etik_tekshiruv_royxatini_avtomat.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_etik_tekshiruv_royxatini_avtomat.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. 20 bandning qaysilarini kod bilan o'lchab bo'ladi, qaysilari faqat tashkiliy hujjat (dalil) bilan tasdiqlanadi? Nega bu ajratish muhim?
+2. Texnik bandlar uchun qanday o'lchovlar kerak va ular avvalgi qadamlarning qaysi biriga mos keladi?
+3. Band nomlaridagi chegaralar (EO<0.05, adv aniqlik >= 50 %) holatni qanday aniqlaydi? Chegaradan o'tmasa 'yo'q' yoki 'qisman' — qaysi biri adolatli?
+4. Talaba DALIL'da 'ha' deb yozib, dalil matnini bo'sh qoldirsa, skript nima qilishi kerak? Nega 'dalilsiz ha' qabul qilinmaydi?
+5. Umumiy ball qanday hisoblanadi va qaysi chegaralarda xulosa 'yetarli', 'qisman', 'qoniqarsiz' bo'ladi?
+6. Natijani qanday tekshirasiz: umumiy ball qancha atrofida va qaysi bandlar bajarilmagan bo'lishi kerak? Ular yuqori xavfli tizim uchun nega muhim?
 
 Kutilgan natija: 20 qatorli jadval, umumiy ball ~60/100, bajarilmagan bandlar ro'yxati (masalan 9, 12, 14, 18) va xulosa.
 

@@ -53,48 +53,25 @@ def oqit(model, Xtr, ytr, epoxa=5, lr=3e-3):
 
 X, y = har_yarat(3000)
 Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.3, random_state=0, stratify=y)
-t0 = time.perf_counter(); model = oqit(HARNet(), Xtr, ytr); t_oq = time.perf_counter() - t0
-with torch.no_grad():
-    acc = (model(torch.tensor(Xte)).argmax(1).numpy() == yte).mean()
-n_par = sum(p.numel() for p in model.parameters())
+
+# TODO 1: HARNet ni o'qiting (vaqtini perf_counter bilan o'lchang), test aniqligini va parametrlar sonini hisoblang
+model, t_oq, acc, n_par = None, None, None, None
+raise NotImplementedError("TODO 1: model o'qitish, aniqlik va parametrlar soni")
 print("=== Etalon model (PyTorch FP32) ===")
 print(f"HARNet: {n_par} parametr ({n_par * 4 / 1024:.1f} KB FP32), o'qitish {t_oq:.1f} s, test aniqligi {acc:.3f}")
-print("Sinflar:", ", ".join(SINFLAR))
 
-# --- O'lchov metodikasi
 print("\n=== O'lchov metodikasi ===")
-print(f"Taymer aniqligi (perf_counter): {time.get_clock_info('perf_counter').resolution * 1e9:.0f} ns")
 x1 = torch.tensor(Xte[:1])
+
+# TODO 2: chaqir(fn, n) — fn ni n marta chaqirib, har chaqiruv vaqtini ms da numpy massivda qaytaring
 def chaqir(fn, n):
-    t = np.empty(n)
-    for i in range(n):
-        a = time.perf_counter(); fn(); t[i] = time.perf_counter() - a
-    return t * 1e3
-m_fresh = HARNet().eval()
-with torch.inference_mode():
-    sovuq = chaqir(lambda: m_fresh(x1), 50)
-print(f"Isinish effekti: 1-chaqiruv {sovuq[0]:.2f} ms, 2–10 o'rtacha {sovuq[1:10].mean():.3f} ms, 40–50 o'rtacha {sovuq[40:].mean():.3f} ms")
+    raise NotImplementedError("TODO 2: chaqiruvlar vaqtini o'lchash")
 
-# Bir xil konfiguratsiyani 5 marta o'lchash — natijalar tarqalishi (o'rtacha emas, foizlar va CV)
+# TODO 3: yangi (sovuq) modelda 50 chaqiruv bilan isinish effektini ko'rsating: 1-chaqiruv, 2–10 va 40–50 o'rtachasi
+
+# TODO 4: toliq_olch(fn) — isinishdan keyin 400 chaqiruv, p50/p95/p99/p99.9 va o'rtachani qaytaring
 def toliq_olch(fn, takror=400, isinish=50):
-    chaqir(fn, isinish); t = chaqir(fn, takror)
-    return [np.percentile(t, q) for q in (50, 95, 99, 99.9)] + [t.mean()]
-rows = []
-with torch.inference_mode():
-    jit = torch.jit.trace(model, x1); jit = torch.jit.freeze(jit)
-    for nom, fn in [("eager + no_grad", lambda: model(x1)), ("TorchScript freeze", lambda: jit(x1))]:
-        for k in range(5):
-            rows.append([nom, k + 1] + toliq_olch(fn))
-df = pd.DataFrame(rows, columns=["Rejim", "Takror", "p50", "p95", "p99", "p99.9", "o'rtacha"])
-print(df.round(3).to_string(index=False))
-agg = df.groupby("Rejim")[["p50", "p99"]].agg(["mean", "std"])
-for rj in agg.index:
-    m50, s50 = agg.loc[rj, ("p50", "mean")], agg.loc[rj, ("p50", "std")]
-    print(f"{rj}: p50 = {m50:.3f} ± {s50:.3f} ms (CV {s50 / m50:.1%}), p99 = {agg.loc[rj, ('p99', 'mean')]:.3f} ms")
-print("Qoida: isinishsiz o'lchamang, kamida 3–5 marta takrorlang, o'rtacha emas p50/p99 ni va tarqalishni (CV) bering.")
+    raise NotImplementedError("TODO 4: foizlar bo'yicha o'lchov")
 
-with torch.inference_mode():
-    t = chaqir(lambda: model(x1), 2000)
-plt.figure(figsize=(6, 3.2)); plt.hist(t, bins=80, color="tab:blue"); plt.yscale("log")
-for q, c in [(50, "g"), (99, "r")]: plt.axvline(np.percentile(t, q), c=c, ls="--", label=f"p{q}")
-plt.xlabel("Kechikish, ms (batch 1)"); plt.ylabel("soni"); plt.title("Kechikish taqsimoti: uzun dum"); plt.legend(); plt.tight_layout()
+# TODO 5: eager va TorchScript (trace + freeze) rejimlarini 5 martadan o'lchab jadval tuzing,
+#         har rejim uchun p50 o'rtacha ± std va CV ni chiqaring

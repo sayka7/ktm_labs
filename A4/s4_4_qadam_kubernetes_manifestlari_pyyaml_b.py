@@ -103,53 +103,21 @@ spec:
 
 def cpu_m(v):
     """CPU qiymatini millicore'ga: '1500m' -> 1500, '2' -> 2000."""
-    v = str(v); return int(v[:-1]) if v.endswith("m") else int(float(v) * 1000)
+    # TODO 2: 'm' qo'shimchasini hisobga olib millicore'ga o'tkazing
+    raise NotImplementedError("TODO 2: cpu_m")
 
 def tekshir(text):
-    obj = {d["kind"]: d for d in yaml.safe_load_all(text) if d}
-    q = {}
-    dep = obj.get("Deployment", {}); tpl = dep.get("spec", {}).get("template", {}); pod = tpl.get("spec", {})
-    k = pod.get("containers", [{}])[0]; res = k.get("resources", {})
-    q["Deployment, Service, HPA, ConfigMap mavjud"] = all(x in obj for x in ("Deployment", "Service", "HorizontalPodAutoscaler", "ConfigMap"))
-    q["replicas >= 2 (bitta nuqta nosozligi yo'q)"] = dep.get("spec", {}).get("replicas", 0) >= 2
-    q["selector == template labels"] = dep.get("spec", {}).get("selector", {}).get("matchLabels") == tpl.get("metadata", {}).get("labels")
-    q["image tegi 'latest' emas"] = ":" in k.get("image", "") and not k["image"].endswith(":latest")
-    q["resources.requests (CPU va xotira) — HPA uchun shart"] = all(x in res.get("requests", {}) for x in ("cpu", "memory"))
-    q["resources.limits (CPU va xotira)"] = all(x in res.get("limits", {}) for x in ("cpu", "memory"))
-    q["limits >= requests"] = bool(res.get("limits")) and cpu_m(res["limits"]["cpu"]) >= cpu_m(res["requests"]["cpu"])
-    q["readinessProbe bor"] = "readinessProbe" in k
-    q["livenessProbe bor va readiness'dan kechroq boshlanadi"] = "livenessProbe" in k and \
-        k["livenessProbe"].get("initialDelaySeconds", 0) >= k.get("readinessProbe", {}).get("initialDelaySeconds", 0) + 10
-    q["readiness va liveness yo'llari har xil"] = k.get("readinessProbe", {}).get("httpGet", {}).get("path") != k.get("livenessProbe", {}).get("httpGet", {}).get("path")
-    q["runAsNonRoot"] = pod.get("securityContext", {}).get("runAsNonRoot") is True
-    q["RollingUpdate maxUnavailable: 0 (xizmat to'xtamaydi)"] = dep.get("spec", {}).get("strategy", {}).get("rollingUpdate", {}).get("maxUnavailable") == 0
-    svc = obj.get("Service", {}).get("spec", {})
-    q["Service targetPort == containerPort"] = svc.get("ports", [{}])[0].get("targetPort") == k.get("ports", [{}])[0].get("containerPort")
-    q["Service selector Pod labellariga mos"] = svc.get("selector") == tpl.get("metadata", {}).get("labels")
-    hpa = obj.get("HorizontalPodAutoscaler", {}).get("spec", {})
-    q["HPA minReplicas >= 2 va max > min"] = hpa.get("minReplicas", 0) >= 2 and hpa.get("maxReplicas", 0) > hpa.get("minReplicas", 0)
-    q["HPA behavior (stabilizatsiya oynalari) bor"] = "behavior" in hpa
-    q["HPA nishoni Deployment nomiga mos"] = hpa.get("scaleTargetRef", {}).get("name") == dep.get("metadata", {}).get("name")
-    q["Prometheus scrape annotatsiyalari"] = tpl.get("metadata", {}).get("annotations", {}).get("prometheus.io/scrape") == "true"
-    return q, obj
+    # TODO 1: yaml.safe_load_all bilan ob'ektlarni o'qing va {kind: ob'ekt} lug'atini tuzing
+    # TODO 3: selector/label va Service selector/targetPort mosligi
+    # TODO 4: probe'lar (bor, liveness kechroq, yo'llar har xil)
+    # TODO 5: replicas, image tegi, requests/limits, runAsNonRoot, maxUnavailable 0, HPA min/max/behavior/nishon, Prometheus — jami 18 qoida
+    raise NotImplementedError("TODO 1-5: manifest qoidalari")
 
 print("=== Kubernetes manifest tekshiruvi ===")
-jami = {}
 for nomi, text in (("to'g'ri", MANIFEST), ("xatoli", XATOLI)):
-    q, obj = tekshir(text); jami[nomi] = q
+    q, obj = tekshir(text)
     print(f"\n[{nomi.upper()}] ob'ektlar: {list(obj)}   ball {sum(q.values())}/{len(q)}")
-    for k, v in q.items():
-        print(f"  {'PASS' if v else 'FAIL'}  {k}")
+    for k, v in q.items(): print(f"  {'PASS' if v else 'FAIL'}  {k}")
 
-print("\nQiyosiy jadval:")
-jad = pd.DataFrame({"qoida": list(jami["to'g'ri"]), "to'g'ri": list(jami["to'g'ri"].values()), "xatoli": list(jami["xatoli"].values())})
-print(jad.replace({True: "+", False: "-"}).to_string(index=False))
-
-# HPA hisobi: foiz requests'ga nisbatan — chegara qancha millicore?
-obj = {d["kind"]: d for d in yaml.safe_load_all(MANIFEST)}
-req = cpu_m(obj["Deployment"]["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["cpu"])
-hpa = obj["HorizontalPodAutoscaler"]["spec"]; target = hpa["metrics"][0]["resource"]["target"]["averageUtilization"]
-print(f"\n=== HPA hisobi ===\nrequests.cpu = {req}m, nishon {target} % -> masshtablash chegarasi har Pod'da {req * target // 100}m CPU.")
-print(f"Formula: kerakli_nusxa = ceil(joriy_nusxa x joriy_foiz / {target}). Masalan 2 nusxa 95 % da -> ceil(2 x 95/60) = {-(-2 * 95 // 60)} nusxa.")
-print(f"Klaster sig'imi: maxReplicas {hpa['maxReplicas']} x limits 2 CPU = {hpa['maxReplicas'] * 2} vCPU kerak bo'lishi mumkin — tugunlar yetarlimi, tekshiring.")
-print("\nReal labda: kubectl apply -f k8s/ && kubectl rollout status deployment/digits-infer && kubectl get hpa -w")
+print("\n=== HPA hisobi ===")
+# TODO 6: requests.cpu (millicore) x averageUtilization / 100 = chegara; 2 nusxa 95 % da kerakli nusxalar soni

@@ -97,70 +97,30 @@ def content(text):
 def numbers(text):
     return re.findall(r"\d+(?::\d+)?", text)
 
+# TODO 1: jumla uchun 3 belgi: (a) mazmunli so'zlarning kontekstda bo'lish ulushi, (b) barcha sonlar kontekstda bormi,
+#         (c) jumla bigrammalaridan kontekstda YO'Q bo'lganlari ulushi
 def features(sent, ctx):
-    """Bitta javob jumlasi uchun 'tayanish' belgilari."""
-    cw, ctx_set = content(sent), set(tokens(ctx))
-    support = np.mean([w in ctx_set for w in cw]) if cw else 1.0
-    nums = numbers(sent); num_ok = all(n in numbers(ctx) for n in nums)
-    ct = tokens(ctx); big = set(zip(ct, ct[1:])); st = tokens(sent)
-    sb = list(zip(st, st[1:])); novel = np.mean([b not in big for b in sb]) if sb else 0.0
-    return support, num_ok, novel
+    raise NotImplementedError("TODO 1: tayanish belgilari")
 
+# TODO 2: belgilarni bitta 'tayanish balli' (0..1) ga birlashtiring; son mos kelmasa kuchli jarima
 def score(sent, ctx):
-    """Yakuniy 'tayanish balli' (1 = to'liq tayangan). Son mos kelmasa — kuchli jarima."""
-    s, n, nov = features(sent, ctx)
-    return s * (1.0 if n else 0.3) * (1 - 0.5 * nov)
+    raise NotImplementedError("TODO 2: tayanish balli")
 
 PREFIX = ["Qoidaga ko'ra,", "Hujjatda yozilishicha,", "Ichki tartibga muvofiq,", "Aniqlashtirsak,"]
+# TODO 3a: parafraz — kirish so'zi (PREFIX) qo'shib, sonsiz bitta so'zni tushiring (manbaga tayangan, lekin so'zma-so'z emas)
 def paraphrase(s):
-    """Manbaga tayangan, lekin so'zma-so'z bo'lmagan javob: kirish so'zi qo'shiladi, bitta so'z tushiriladi."""
-    w = s.rstrip(".").split(); i = rng.randrange(1, len(w) - 1)
-    if not re.search(r"\d", w[i]): w.pop(i)
-    return f"{rng.choice(PREFIX)} {w[0].lower()} {' '.join(w[1:])}."
+    raise NotImplementedError("TODO 3a: parafraz")
 
-# ---- Sintetik javoblar: to'g'ri va 4 xil gallyutsinatsiya ----
 non_num = [a for d, s, q, a in FACTS if not re.search(r"\d", a)]
 samples = []   # (tur, jumla, kontekst, yorliq: 1 = gallyutsinatsiya)
-for d, s, q, a in FACTS:
-    ctx = DOCS[d]
-    samples.append(("to'g'ri", s, ctx, 0))
-    samples.append(("to'g'ri (parafraz)", paraphrase(s), ctx, 0))
-    if numbers(s):
-        alt = re.sub(r"\d+", lambda m: str(int(m.group()) + rng.choice([1, 2, 5, 10])), s, count=1)
-        samples.append(("son almashgan", alt, ctx, 1))
-    else:
-        other = rng.choice([x for x in non_num if x != a])
-        samples.append(("obyekt almashgan", re.sub(re.escape(a), other, s, flags=re.I), ctx, 1))
-    other_fact = rng.choice([f for f in FACTS if f[0] != d])[1]
-    samples.append(("boshqa hujjatdan", other_fact, ctx, 1))
-    samples.append(("to'qib chiqarilgan", rng.choice(FABRIC), ctx, 1))
+# TODO 3: har fakt uchun 6 tur javob yasang: to'g'ri, parafraz, son almashgan (yoki obyekt almashgan),
+#         boshqa hujjatdan, to'qib chiqarilgan (FABRIC)
+assert samples, "TODO 3: avval sintetik javoblarni yasang"
 
-y = np.array([l for *_, l in samples])
-S = np.array([score(snt, c) for _, snt, c, _ in samples])
-F_ = np.array([features(snt, c) for _, snt, c, _ in samples], dtype=float)
-print(f"Namunalar: {len(samples)} (to'g'ri={sum(y==0)}, gallyutsinatsiya={sum(y==1)})")
 print("=== Detektor sifati (ROC-AUC, 1 = gallyutsinatsiya) ===")
-print(f"faqat so'z qamrovi           AUC = {roc_auc_score(y, 1 - F_[:, 0]):.3f}")
-print(f"faqat son tekshiruvi         AUC = {roc_auc_score(y, 1 - F_[:, 1]):.3f}")
-print(f"faqat yangi bigrammalar      AUC = {roc_auc_score(y, F_[:, 2]):.3f}")
-print(f"birlashgan tayanish balli    AUC = {roc_auc_score(y, 1 - S):.3f}")
+# TODO 4: har belgi alohida va birlashgan ball uchun roc_auc_score (yo'nalishga e'tibor: yuqori ball = tayangan)
 TH = 0.6
-pred = (S < TH).astype(int)
-tn, fp, fn, tp = confusion_matrix(y, pred).ravel()
-print(f"\nChegara: ball < {TH} -> 'asossiz'.  TP={tp} FP={fp} FN={fn} TN={tn}  precision={tp/(tp+fp):.2f} recall={tp/(tp+fn):.2f}")
-print("=== Turlar bo'yicha aniqlash ulushi ===")
-for t in ["to'g'ri", "to'g'ri (parafraz)", "son almashgan", "obyekt almashgan", "boshqa hujjatdan", "to'qib chiqarilgan"]:
-    idx = [i for i, s in enumerate(samples) if s[0] == t]
-    print(f"{t:<20} n={len(idx):3d}  'asossiz' deb belgilangan: {pred[idx].mean():.2f}   o'rtacha ball={S[idx].mean():.2f}")
+# TODO 5: ball < TH -> 'asossiz'; TP/FP/FN/TN, precision, recall va turlar bo'yicha aniqlash ulushi
 
 print("\n=== Jumla darajasida tekshiruv: aralash javob ===")
-d, s, q, a = FACTS[9]
-ans = s + " " + FABRIC[1] + " " + "Hisobotga chiptalar nusxasi ilova qilinadi."
-for snt in sentences(ans):
-    sc = score(snt, DOCS[d]); print(f"[{'OK ' if sc >= TH else 'ASOSSIZ'}] {sc:.2f}  {snt}")
-
-fig, ax = plt.subplots(figsize=(7, 3.2))
-ax.hist(S[y == 0], bins=15, alpha=.6, label="to'g'ri"); ax.hist(S[y == 1], bins=15, alpha=.6, label="gallyutsinatsiya")
-ax.axvline(TH, color="k", ls="--"); ax.set_xlabel("tayanish balli"); ax.legend(); ax.set_title("Tayanish balli taqsimoti"); plt.tight_layout()
-print("\nIzoh: real tizimda leksik qamrov o'rniga NLI (entailment) modeli yoki 'LLM-hakam' ishlatiladi; ular sinonim va")
-print("parafrazni tushunadi, lekin o'zi ham xato qiladi. Sonlarni alohida tekshirish oddiy, ammo juda samarali qoida.")
+# TODO 6: FACTS[9] fakti + to'qilgan jumla + manbada yo'q jumladan iborat javobni jumlalarga bo'lib, har birini baholang

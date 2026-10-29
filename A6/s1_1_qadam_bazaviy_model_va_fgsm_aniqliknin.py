@@ -5,7 +5,7 @@ Digits ma'lumoti [0,1] piksel fazosiga keltiriladi (1 kulrang daraja = 1/16), ML
 Kutilgan natija: eps=0.05 da aniqlik ~0.77, eps=0.1 da ~0.3, eps=0.15 da ~0.1; tasodifiy shovqin eps=0.15 da ~0.93 qoldiradi. Grafik: keskin tushuvchi egri chiziq.
 """
 # 1-qadam. Bazaviy model (digits 8x8, MLP) va FGSM hujumi: aniqlikning epsilon ga bog'liqligi
-# Piksellar [0,1] oraliqqa keltiriladi (data/16) — epsilon shu fazoda ma'noga ega (1 kulrang daraja = 1/16 = 0.0625).
+# Piksellar [0,1] oraliqqa keltiriladi (data/16) — 1 kulrang daraja = 1/16 = 0.0625.
 import torch, torch.nn as nn, torch.nn.functional as F, numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_digits
@@ -25,11 +25,9 @@ def train(X, y, steps=300):
     return m.eval()
 
 def fgsm(model, x, y, eps):
-    """x_adv = x + eps * sign(grad_x L) — bitta gradient qadami, [0,1] ga qirqiladi."""
-    x = x.clone().detach().requires_grad_(True)
-    loss = F.cross_entropy(model(x), y)
-    grad, = torch.autograd.grad(loss, x)
-    return (x + eps * grad.sign()).clamp(0, 1).detach()
+    """x_adv = ? — bitta gradient qadami, [0,1] ga qirqiladi."""
+    # TODO 1: x bo'yicha yo'qotish gradientini oling va eps * sign(grad) qadamini qo'yib, [0,1] ga qirqing
+    raise NotImplementedError("TODO 1: FGSM")
 
 def acc(model, x, y):
     with torch.no_grad(): return (model(x).argmax(1) == y).float().mean().item()
@@ -38,19 +36,8 @@ model = train(Xtr, ytr)
 print(f"Toza aniqlik: o'quv={acc(model, Xtr, ytr):.3f}  test={acc(model, Xte, yte):.3f}")
 EPS = [0.0, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3]
 print("=== FGSM: aniqlik vs epsilon ===")
-print(f"{'eps':>6s} {'eps*16 (daraja)':>16s} {'aniqlik':>8s} {'o\'rtacha L_inf':>14s}")
 res = []
+# TODO 2: har eps uchun hujumli test to'plamida aniqlik va o'rtacha L_inf masofani chiqaring (res ga yig'ing)
 for e in EPS:
     xa = fgsm(model, Xte, yte, e) if e > 0 else Xte
-    a = acc(model, xa, yte); res.append(a)
-    print(f"{e:6.2f} {e*16:16.1f} {a:8.3f} {(xa - Xte).abs().amax(1).mean():14.3f}")
-# Tasodifiy shovqin bilan taqqoslash: xuddi shu eps, lekin yo'nalish tasodifiy
-e = 0.15; xr = (Xte + e * torch.sign(torch.randn_like(Xte))).clamp(0, 1)
-print(f"\nTaqqoslash eps={e}: FGSM aniqlik={res[EPS.index(e)]:.3f}  tasodifiy +-eps shovqin={acc(model, xr, yte):.3f}")
-print("Xulosa: gradient yo'nalishidagi kichik buzilish tasodifiy shovqindan ko'p marta xavfliroq.")
-
-plt.figure(figsize=(6, 4))
-plt.plot(EPS, res, marker="o", label="FGSM")
-plt.axhline(acc(model, xr, yte), ls="--", c="gray", label=f"tasodifiy shovqin (eps={e})")
-plt.xlabel("epsilon (L_inf, [0,1] piksel fazosi)"); plt.ylabel("test aniqligi"); plt.ylim(0, 1.02)
-plt.title("Mustahkamlik egri chizig'i: digits MLP, FGSM"); plt.grid(alpha=.3); plt.legend(); plt.tight_layout()
+# TODO 3: eps=0.15 da tasodifiy +-eps shovqin bilan taqqoslang ("Taqqoslash eps=..." qatori) va egri chiziqni chizing

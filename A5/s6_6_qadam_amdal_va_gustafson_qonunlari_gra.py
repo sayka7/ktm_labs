@@ -10,28 +10,16 @@ import numpy as np, matplotlib.pyplot as plt
 N = np.array([1, 2, 4, 8, 16, 32, 64, 128, 256])
 fracs = [0.90, 0.95, 0.99]           # parallel qilinadigan ulush p
 
-def amdahl(p, n):    return 1.0 / ((1 - p) + p / n)            # kuchli masshtablash (ish hajmi o'zgarmas)
-def gustafson(p, n): return (1 - p) + p * n                     # kuchsiz masshtablash (ish hajmi N bilan o'sadi)
+def amdahl(p, n):
+    # TODO 1: kuchli masshtablash (ish hajmi o'zgarmas) tezlashishi S(N)
+    raise NotImplementedError("TODO 1: Amdal")
 
-print("=== Amdal qonuni: S(N) = 1 / ((1-p) + p/N) ===")
-print(f"{'N':>4s} " + " ".join(f"p={p:.2f}  S / E%" for p in fracs))
-for n in N:
-    print(f"{n:4d} " + " ".join(f"{amdahl(p, n):8.2f} /{100*amdahl(p, n)/n:4.0f}%" for p in fracs))
-print("\n=== Gustafson qonuni: S(N) = (1-p) + p*N ===")
-for n in (8, 64, 256):
-    print(f"N={n:3d}: " + ", ".join(f"p={p:.2f} -> S={gustafson(p, n):6.1f}" for p in fracs))
+def gustafson(p, n):
+    # TODO 2: kuchsiz masshtablash (ish hajmi N bilan o'sadi) tezlashishi S(N)
+    raise NotImplementedError("TODO 2: Gustafson")
 
-print("\nAmdal chegarasi (N -> cheksiz): " + ", ".join(f"p={p:.2f} -> {1/(1-p):.0f}x" for p in fracs))
-# Masalan: ResNet-18 DDP da aloqa ulushi ~12% (4 GPU, PCIe) -> ketma-ket ulush ~0.12 -> maksimal ~8x
-p_ddp = 1 - 0.12
-print(f"Misol: aloqa ulushi 12% (ketma-ket deb olsak) -> p={p_ddp:.2f}, S(4)={amdahl(p_ddp,4):.2f}, E(4)={100*amdahl(p_ddp,4)/4:.0f}%, chegara {1/(1-p_ddp):.1f}x")
-
-fig, ax = plt.subplots(1, 2, figsize=(11, 4))
-for p in fracs:
-    ax[0].plot(N, amdahl(p, N), marker="o", label=f"p={p}")
-    ax[1].plot(N, gustafson(p, N), marker="s", label=f"p={p}")
-ax[0].plot(N, N, "k--", lw=1, label="ideal"); ax[1].plot(N, N, "k--", lw=1, label="ideal")
-ax[0].set(xscale="log", yscale="log", title="Amdal (kuchli masshtablash)", xlabel="N (ishchilar)", ylabel="S(N)")
-ax[1].set(xscale="log", yscale="log", title="Gustafson (kuchsiz masshtablash)", xlabel="N (ishchilar)")
-for a in ax: a.grid(alpha=.3); a.legend()
-plt.tight_layout()
+print("=== Amdal qonuni: S(N) = ? ===")
+# TODO 3: har N uchun p bo'yicha S va E% jadvali; N -> cheksiz chegarasi
+print(amdahl(fracs[0], N))
+print("\n=== Gustafson qonuni: S(N) = ? ===")
+# TODO 4: N = 8, 64, 256 uchun Gustafson S; ikki panelli log-log grafik (ideal chiziq bilan)

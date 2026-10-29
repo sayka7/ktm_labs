@@ -81,81 +81,34 @@ def tokens(text, use_stem=True):
     ws = re.findall(r"[a-zA-Z0-9'ʻʼ:]+", text.lower())
     return [stem(w) if use_stem else w for w in ws]
 # ---- bilim bazasi tugadi ----
-# Katta LLM yo'q: javob sifatida qidirilgan bo'laklardan eng mos JUMLA tanlanadi (ekstraktiv QA).
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 DOCS = build_docs(seed=0)
 CHUNKS = []
-for d, t in DOCS.items():
-    s = sentences(t)
-    for i in range(0, len(s), 3):                      # 3 jumlali bo'laklar
-        CHUNKS.append({"id": f"{d}#{i // 3 + 1}", "text": " ".join(s[i:i + 3])})
-texts = [c["text"] for c in CHUNKS]
-VEC = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), sublinear_tf=True).fit(texts + [s for t in texts for s in sentences(t)])
-M = VEC.transform(texts)
+# TODO 1: har hujjatni 3 jumlali bo'laklarga bo'ling: {"id": "Hujjat#n", "text": ...}
+VEC = None   # TODO 2: char_wb (3,5) TF-IDF ni bo'laklar va ularning jumlalari ustida o'qiting
+M = None
 
+# TODO 3: so'rov va bo'laklar kosinus o'xshashligi bo'yicha top-k (bo'lak, ball) qaytaring
 def retrieve(q, k=3):
-    sc = (M @ VEC.transform([q]).T).toarray().ravel()
-    idx = np.argsort(-sc)[:k]
-    return [(CHUNKS[i], float(sc[i])) for i in idx]
+    raise NotImplementedError("TODO 3: TF-IDF qidiruv")
 
 QWORDS = {"necha", "qancha", "nechta", "nechada", "qanchalik"}
+# TODO 4: ekstraktiv generator: top-k bo'lak jumlalaridan savolga eng o'xshashini tanlang (son so'ralsa sonli
+#         jumlaga +0.05); eng yaxshi ball < tau bo'lsa rad eting -> (javob, manba_id yoki None, ball)
 def answer(q, k=3, tau=0.0):
-    """Ekstraktiv generator: top-k bo'lak jumlalari ichidan savolga eng o'xshashini tanlaydi."""
-    hits = retrieve(q, k); best = (-1, None, None)
-    qv = VEC.transform([q])
-    for ch, _ in hits:
-        for s in sentences(ch["text"]):
-            sc = float((VEC.transform([s]) @ qv.T).toarray()[0, 0])
-            if set(tokens(q, False)) & QWORDS and re.search(r"\d", s): sc += 0.05   # son so'ralsa — sonli jumla
-            if sc > best[0]: best = (sc, s, ch["id"])
-    if best[0] < tau:
-        return "Kechirasiz, bilim bazasida bu savolga javob topilmadi.", None, best[0]
-    return best[1], best[2], best[0]
+    raise NotImplementedError("TODO 4: jumla tanlash va rad etish")
 
 UNANSWERABLE = ["Korporativ avtomobildan foydalanish tartibi qanday?", "Kompaniyaning bosh direktori kim?",
                 "Ofisga uy hayvonini olib kelish mumkinmi?", "Yangi yil mukofoti qancha beriladi?",
                 "Avtoturargoh uchun oylik to'lov qancha?", "Sport zali qaysi binoda joylashgan?"]
 
 print("=== Mini-RAG: top-k ta'siri (javobsiz savollarsiz) ===")
-for k in (1, 3, 5):
-    ok = sum(a.lower() in answer(q, k)[0].lower() for d, s, q, a in FACTS)
-    print(f"k={k}: to'g'ri javob {ok}/{len(FACTS)} = {ok/len(FACTS):.2f}")
-print("Xato tanlangan jumlalar (k=3):")
-for d, s, q, a in FACTS:
-    txt = answer(q, 3)[0]
-    if a.lower() not in txt.lower(): print(f"  S: {q}\n     -> {txt}")
+# TODO 5: k = 1, 3, 5 uchun kutilgan javob bo'lagi javob matnida bormi — to'g'ri javoblar ulushini chiqaring
 
 print("\n=== Rad etish chegarasi (tau) tanlash: javobli + javobsiz savollar ===")
-ans_sc = [answer(q)[2] for d, s, q, a in FACTS]; una_sc = [answer(q)[2] for q in UNANSWERABLE]
-print(f"javobli savollar balli: min={min(ans_sc):.3f} o'rtacha={np.mean(ans_sc):.3f};  javobsiz: max={max(una_sc):.3f} o'rtacha={np.mean(una_sc):.3f}")
-print(f"{'tau':>6}{'to`g`ri':>9}{'noto`g`ri':>11}{'asossiz rad':>13}{'to`g`ri rad':>13}{'umumiy':>8}")
-best_tau, best_acc = 0, -1
-for tau in np.round(np.arange(0.10, 0.46, 0.05), 2):
-    c = w = fr = tr = 0
-    for d, s, q, a in FACTS:
-        txt, src, _ = answer(q, 3, tau)
-        if src is None: fr += 1
-        elif a.lower() in txt.lower(): c += 1
-        else: w += 1
-    tr = sum(answer(q, 3, tau)[1] is None for q in UNANSWERABLE)
-    acc = (c + tr) / (len(FACTS) + len(UNANSWERABLE))
-    if acc > best_acc: best_tau, best_acc = tau, acc
-    print(f"{tau:>6.2f}{c:>9}{w:>11}{fr:>13}{tr:>13}{acc:>8.2f}")
-print(f"Tanlangan tau = {best_tau} (umumiy aniqlik {best_acc:.2f})")
+# TODO 6: tau = 0.10..0.45 to'rida to'g'ri / noto'g'ri / asossiz rad / to'g'ri rad sonlari va umumiy aniqlikni
+#         hisoblang, eng yaxshisini "Tanlangan tau = ..." deb chiqaring
 
-print("\n=== Namuna javoblar (manba havolasi bilan) ===")
-for q in [FACTS[4][2], FACTS[13][2], UNANSWERABLE[1]]:
-    txt, src, sc = answer(q, 3, best_tau)
-    print(f"S: {q}\nJ: {txt}" + (f"  [manba: {src}, ball={sc:.2f}]" if src else f"  [ball={sc:.2f} < tau]"))
-
-q = FACTS[8][2]; hits = retrieve(q, 3)
-prompt = ("Sen kompaniya ichki yordamchisisan. Faqat KONTEKST bo'limidagi ma'lumotga tayan.\n"
-          "Javob topilmasa: 'Ma'lumot topilmadi' de. Har da'vodan keyin [manba] ko'rsat.\n=== KONTEKST BOSHI ===\n" +
-          "\n".join(f"[{c['id']}] {c['text']}" for c, _ in hits) + f"\n=== KONTEKST OXIRI ===\nSavol: {q}\nJavob:")
-print("\n=== Haqiqiy LLM uchun yig'ilgan prompt ===")
-print(prompt)
-print(f"(prompt uzunligi ~{len(prompt.split())} so'z)")
-print("\nIzoh: haqiqiy LLM ushbu promptdan erkin matnli (abstraktiv) javob yozadi; bizning ekstraktiv generator esa")
-print("faqat mavjud jumlani qaytaradi — shuning uchun u 'o'ylab topa olmaydi', lekin jumlalarni birlashtira ham olmaydi.")
+# TODO 7: haqiqiy LLM uchun prompt yig'ing: rol, "faqat KONTEKST ga tayan", rad etish iborasi, [manba] id lari, savol

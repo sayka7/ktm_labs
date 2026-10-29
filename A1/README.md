@@ -1,6 +1,7 @@
 # A1. Sun'iy intellektga asoslangan kompyuter tizimlari arxitekturasini tahlil qilish va loyihalash
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A1_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz SHV (shaxsiy himoya vositalari) aniqlash tizimi uchun hisoblash platformasini raqamlar bilan tanlaysiz: talablardan FLOP/TFLOP/s yuklamasini hisoblaysiz, platformalarni talablar matritsasi bo'yicha baholaysiz, kechikish byudjetini simulyatsiya qilasiz, Roofline tahlilini quriysiz, kichik CNN'ning FLOP'ini torch bilan sanaysiz va Hardware–Software Co-design izlanish fazosini grid search bilan ko'rib chiqasiz. Real labdan farqi: tarmoq yo'qligi sababli ultralytics YOLO vaznlari yuklanmaydi — rasmiy hujjatlardagi GFLOP/parametr qiymatlari jadval sifatida kiritilgan; GPU yo'q, shuning uchun o'lchovlar 2 yadroli CPU'da kichik modelda bajariladi.
 
 ## Muhit
@@ -15,7 +16,17 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Ssenariy talablari (16 kamera × 10 kadr/s) YOLOv8 variantlari uchun bir inferens GFLOP, vazn hajmi (FP16/INT8) va jami TFLOP/s talabiga aylantiriladi; samaradorlik koeffitsiyenti orqali kerakli cho'qqi TOPS topiladi. Kutilgan natija: yolov8s @ 640 uchun 28,6 GFLOP, 4,58 TFLOP/s haqiqiy, ~10 TOPS cho'qqi. Kodda KAMERALAR, FPS, SAMARADORLIK va MODELLAR jadvalini o'zgartirib, talab qanday o'sishini kuzating.
 
-Fayl: `s1_1_qadam_talablardan_yuklama_hisobi_gflop.py` — ishga tushirish: `python3 s1_1_qadam_talablardan_yuklama_hisobi_gflop.py`
+Fayl: `s1_1_qadam_talablardan_yuklama_hisobi_gflop.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_talablardan_yuklama_hisobi_gflop.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Masalada nima berilgan va nima so'ralyapti: bitta kadr uchun hisob (GFLOP) bilan butun tizim uchun talab (TFLOP/s) qanday bog'langan?
+2. Agar kirish o'lchami 640 dan 416 ga tushsa, konvolyutsiya FLOP'i qanday o'zgaradi — chiziqli kamayadimi yoki boshqachami?
+3. GFLOP/s ni TFLOP/s ga o'tkazishda nimaga bo'lish kerak? yolov8s @640 uchun qiymat 4,58 chiqishi uchun hisobni tekshiring.
+4. Nega kerakli cho'qqi TOPS haqiqiy talabdan katta bo'ladi? SAMARADORLIK 0,45 bo'lsa koeffitsiyent qaysi tomonga ishlaydi?
+5. Vazn hajmi FP16 va INT8 formatlarda parametr soniga qanday bog'liq?
+6. 12 qatorli jadvalni qanday yig'asiz va undan bitta (yolov8s, 640) qatorni qanday ajratib olasiz?
+7. Tarmoq va xotira talabi ham cheklov bo'la oladimi? 16 oqim x 4 Mbit/s va 160 ta xom RGB kadr qancha bo'ladi?
 
 Kutilgan natija: 12 qatorli jadval (4 model × 3 imgsz), etalon yolov8s@640: 4,58 TFLOP/s, cho'qqi 10,2 TOPS; tarmoq 64 Mbit/s, xom kadrlar ~1 GB/s.
 
@@ -29,7 +40,17 @@ Tajriba qilib ko'ring:
 
 Olti platforma (Orin NX, AGX Orin, A100, Coral Edge TPU, x86 CPU, Hailo-8) uchun haqiqiy unumdorlik, zaxira koeffitsiyenti, dekodlash yetarliligi va bir inferensga energiya hisoblanadi; so'ng 7 mezonli og'irlikli talablar matritsasi bo'yicha ball beriladi. Kutilgan natija: Orin NX ~96 %, Coral va CPU zaxira < 1 bo'lgani uchun yaroqsiz. Og'irliklarni va baholash funksiyalarini o'zgartirib, tanlov qanchalik barqarorligini tekshiring.
 
-Fayl: `s2_2_qadam_platformalar_jadvali_va_talablar.py` — ishga tushirish: `python3 s2_2_qadam_platformalar_jadvali_va_talablar.py`
+Fayl: `s2_2_qadam_platformalar_jadvali_va_talablar.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_platformalar_jadvali_va_talablar.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Talablar matritsasi qaysi savolga javob beradi va uni qo'llashdan oldin qaysi talab 'funksional' (bajarilmasa platforma umuman chiqib ketadigan) hisoblanadi?
+2. Haqiqiy unumdorlik va zaxira koeffitsiyenti qanday topiladi? Orin NX uchun ~4,9 chiqishini qo'lda tekshira olasizmi?
+3. NVDEC 1080p30 oqim soni berilgan, bizda esa 1080p10 oqimlar. Bitta 30 kadr/s dekoder nechta 10 kadr/s oqimga teng?
+4. Bitta inferensga energiya (J) quvvat va sekundiga inferenslar sonidan qanday chiqadi?
+5. Zaxira 1 dan 3 gacha bo'lganda ballni 0..1 ga chiziqli qanday akslantirasiz? z=2 da ball qancha bo'lishi kerak?
+6. Mezonlarni (nom, og'irlik, funksiya) ko'rinishida saqlash nega qulay? Jami foizni qanday normallashtirasiz?
+7. Natijani qanday tekshirasiz: Orin NX ~96 % bilan tanlanib, Coral (zaxira 0,44) va CPU yaroqsiz chiqyaptimi? Og'irliklarni o'zgartirsangiz tanlov o'zgaradimi?
 
 Kutilgan natija: Ikki jadval: texnik ko'rsatkichlar (zaxira_koef: Orin NX ~4,9, A100 ~68, Coral 0,44) va og'irlikli ballar; TANLOV: Jetson Orin NX.
 
@@ -43,7 +64,16 @@ Tajriba qilib ko'ring:
 
 200 ms umumiy byudjet bloklar (tarmoq+dekodlash, oldindan ishlov, inferens, keyingi ishlov) orasida taqsimlanadi; har blok kechikishi lognormal taqsimot bilan 20 000 marta simulyatsiya qilinib p50/p95/p99 topiladi. Paket (batch) hajmi inferensni tejasa-da, kutish vaqtini oshirishi ko'rsatiladi. Kutilgan natija: batch=1 da p95 ~105 ms, batch=32 da p95 200 ms dan oshadi. Grafikda byudjet vs simulyatsiya ustunlari va batch egri chizig'i chiqadi.
 
-Fayl: `s3_3_qadam_kechikish_byudjeti_va_monte_karl.py` — ishga tushirish: `python3 s3_3_qadam_kechikish_byudjeti_va_monte_karl.py`
+Fayl: `s3_3_qadam_kechikish_byudjeti_va_monte_karl.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_kechikish_byudjeti_va_monte_karl.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Nega kechikishni bitta o'rtacha son bilan emas, p95/p99 bilan baholaymiz? Real-vaqt tizimida qaysi kadrlar muammo tug'diradi?
+2. Lognormal taqsimot nega kechikish uchun mos? Median (masalan, 25 ms) berilgan bo'lsa, numpy'ga qaysi parametrni uzatasiz?
+3. Bloklar kechikishi qo'shiladi, lekin p95 lar ham qo'shiladimi? Jami p95 ni qanday to'g'ri topasiz?
+4. batch ta kadr to'planishi kerak bo'lsa, birinchi kadr qancha kutadi? 160 kadr/s da batch=16 uchun maksimal kutish necha ms?
+5. Paketlash inferensni qanday tejaydi va buni qanday modellashtirasiz?
+6. Natija to'g'rimi: batch=1 da jami p95 ~105 ms, batch=16 da ~150 ms, 32 da ~240 ms chiqyaptimi? Byudjetdan oshgan kadrlar ulushini qanday hisoblaysiz?
 
 Kutilgan natija: Bloklar jadvali (p50/p95/p99), jami p95 ~105 ms, batch jadvali: 16 da ~150 ms, 32 da ~240 ms; 2 panelli grafik.
 
@@ -57,7 +87,16 @@ Tajriba qilib ko'ring:
 
 Har platforma uchun tizza nuqtasi (P_peak / B_mem) hisoblanadi; YOLOv8s (FP16/INT8, batch 1/8), GEMM va GELU yuklamalari uchun AI = FLOP/bayt topilib, erishiladigan unumdorlik P = min(P_peak, AI·B_mem) va rejim (hisoblash yoki xotira bilan cheklangan) aniqlanadi. Kutilgan natija: YOLOv8s FP16 batch 1 Orin NX'da xotira bilan (X), A100'da hisoblash bilan (H) cheklangan; log-log Roofline grafigi chiziladi.
 
-Fayl: `s4_4_qadam_arifmetik_intensivlik_va_rooflin.py` — ishga tushirish: `python3 s4_4_qadam_arifmetik_intensivlik_va_rooflin.py`
+Fayl: `s4_4_qadam_arifmetik_intensivlik_va_rooflin.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_arifmetik_intensivlik_va_rooflin.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Roofline modeli qaysi ikki chegarani bitta grafikda birlashtiradi va arifmetik intensivlik (AI) nimani o'lchaydi?
+2. Tizza nuqtasi (ridge point) qanday topiladi va uning birligi nima? A100 INT8 uchun ~322 chiqishi uchun TOPS va GB/s ni qanday moslashtirasiz?
+3. Paket hajmi oshganda AI nega o'sadi? Qaysi trafik paketga bir marta, qaysisi har kadrga sarflanadi?
+4. GEMM n x n FP32 uchun FLOP va bayt qancha? Nega elementlararo GELU AI ~1 ga yaqin?
+5. Erishiladigan unumdorlik va rejimni qanday aniqlaysiz? Birliklarga e'tibor: AI*B_mem (GB/s) ni TFLOP/s ga o'tkazish uchun nimaga bo'lasiz?
+6. Natijani qanday tekshirasiz: YOLOv8s FP16 batch 1 Orin NX'da X, A100'da H chiqyaptimi? Log-log o'qlarda roofline nima uchun 'tom' shaklida ko'rinadi?
 
 Kutilgan natija: Tizza nuqtalari (A100 INT8 ~322, Orin NX ~490 FLOP/bayt), yuklama×platforma jadvali H/X belgilari bilan, Roofline grafigi.
 
@@ -71,7 +110,16 @@ Tajriba qilib ko'ring:
 
 MiniYolo nomli kichik detektor tarmog'i uchun forward hook'lar bilan har qatlam FLOP'i formuladan (2·Kh·Kw·Cin·Cout·Hout·Wout) hisoblanadi va torch FlopCounterMode bilan 0 % farq tasdiqlanadi. So'ng kirish o'lchami (64/128/256) va batch (1/8) uchun haqiqiy CPU vaqti o'lchanib erishilgan GFLOP/s topiladi. Kutilgan natija: 128×128 da ~41,6 MFLOP, 61 K parametr; FLOP imgsz² ga proporsional; batch paketlash bir inferens vaqtini kamaytiradi.
 
-Fayl: `s5_5_qadam_kichik_cnn_uchun_flop_va_paramet.py` — ishga tushirish: `python3 s5_5_qadam_kichik_cnn_uchun_flop_va_paramet.py`
+Fayl: `s5_5_qadam_kichik_cnn_uchun_flop_va_paramet.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_kichik_cnn_uchun_flop_va_paramet.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Conv2d qatlami bitta chiqish elementini hisoblash uchun nechta ko'paytirish-qo'shish (MAC) bajaradi va nega formula oldida 2 turibdi?
+2. Hout va Wout ni o'zingiz stride/padding dan hisoblaysizmi yoki hook'ga kelgan `out` tensoridan olasizmi? Qaysi biri xatoga kamroq moyil?
+3. Hook'ni har bir Conv2d ga qanday ulaysiz, Sequential ichidagilarini ham hisobga olib?
+4. 128x128 kirishda jami ~41,6 MFLOP va ~61 K parametr chiqishi kerak. Parametrlar sonini qanday sanaysiz va FP32 vazn hajmi qancha?
+5. Qo'lda hisobingiz to'g'riligini mustaqil qanday tasdiqlaysiz? FlopCounterMode bilan farq necha foiz bo'lishi kerak?
+6. CPU vaqtini ishonchli o'lchash uchun nega isinish (warm-up) va bir nechta takrordan median kerak? imgsz 2 marta oshsa FLOP necha marta oshishi kutiladi?
 
 Kutilgan natija: Qatlamlar jadvali (5 ta Conv2d), jami 41,58 MFLOP hook va FlopCounterMode bir xil; o'lchov jadvali 12–40 GFLOP/s oralig'ida.
 
@@ -85,7 +133,16 @@ Tajriba qilib ko'ring:
 
 Dasturiy qarorlar (3 model × 3 imgsz × 2 format × 3 batch) va apparat qarorlari (6 platforma) birgalikda — 270 ta konfiguratsiya — zaxira, kechikish, quvvat, narx, harorat va format cheklovlari bo'yicha baholanadi. Yaroqli konfiguratsiyalar orasidan mAP bo'yicha eng yaxshilari, har platforma uchun eng yaxshi variant va narx–sifat Pareto chegarasi topiladi; grafikda yaroqli (rangli) va yaroqsiz (kulrang) nuqtalar ko'rsatiladi. Cheklov qiymatlarini o'zgartirib, izlanish fazosi qanday torayishini kuzating.
 
-Fayl: `s6_6_qadam_hardware_software_co_design_izla.py` — ishga tushirish: `python3 s6_6_qadam_hardware_software_co_design_izla.py`
+Fayl: `s6_6_qadam_hardware_software_co_design_izla.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_hardware_software_co_design_izla.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Co-design nimani anglatadi: bu yerda qaysi qarorlar dasturiy, qaysilari apparat qarorlari va nega ularni alohida emas, birgalikda ko'rib chiqamiz?
+2. Izlanish fazosi qancha konfiguratsiyadan iborat va ularni ichma-ich tsikllarsiz qanday aylanib chiqasiz?
+3. Paket hajmi kechikishga ikki tomonlama ta'sir qiladi. Inferens vaqti va paket to'lish kutishini qanday ifodalaysiz?
+4. Cheklovlarni qaysi shaklda saqlash keyin 'qaysi cheklov buzildi' statistikasini olishni osonlashtiradi?
+5. Pareto chegarasi nima? Narx bo'yicha o'sish tartibida yurib, qaysi shart bajarilganda nuqta chegaraga kiradi?
+6. Natijani qanday tekshirasiz: ~118 ta yaroqli, top-10 da yolov8m AGX Orin / Orin NX INT8, Pareto Hailo-8 -> Orin NX -> AGX Orin chiqyaptimi? Qaysi platformalarning yaroqli varianti yo'q va nega?
 
 Kutilgan natija: 270 konfiguratsiya, ~118 yaroqli; top-10 jadval (yolov8m AGX Orin / Orin NX INT8), Pareto ro'yxati (Hailo-8 → Orin NX → AGX Orin), scatter grafik.
 
@@ -99,7 +156,16 @@ Tajriba qilib ko'ring:
 
 Uch variant (har sexda Orin NX; markaziy A100 server; markaziy L4 server) uchun apparat, elektr energiyasi (PUE bilan), tarmoq va texnik xizmat xarajatlari 3 yilga hisoblanadi; sexlar soni 1–24 oralig'ida tenglik nuqtasi qidiriladi va grafik chiziladi. Kutilgan natija: 16 kamera uchun Edge ~1,5 ming $, A100 ~26 ming $; 24 sexgacha markaz Edge'dan arzonlashmaydi. Elektr narxi, tarmoq ijara va server sig'imini o'zgartirib qaytadan hisoblang.
 
-Fayl: `s7_7_qadam_edge_va_markazlashgan_arxitektur.py` — ishga tushirish: `python3 s7_7_qadam_edge_va_markazlashgan_arxitektur.py`
+Fayl: `s7_7_qadam_edge_va_markazlashgan_arxitektur.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_edge_va_markazlashgan_arxitektur.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. TCO (umumiy egalik qiymati) faqat sotib olish narxidan nimasi bilan farq qiladi? Bu yerda qaysi beshta xarajat turi bor?
+2. Markaziy server nechta sexga xizmat qila oladi va sexlar soni sig'imga bo'linmasa birlik sonini qanday yaxlitlaysiz?
+3. Energiya xarajatida PUE nima uchun kerak va Vt dan $ ga qanday o'tasiz? Edge (40 Vt, PUE 1,1) uchun 3 yillik energiya taxminan qancha?
+4. Tarmoq ijarasi qaysi variantga va nimaga proporsional? Edge da kameralar oqimi markazga borishi kerakmi?
+5. $/kamera/oy ko'rsatkichini qanday hisoblaysiz va u turli o'lchamdagi zavodlarni solishtirishda nega qulay?
+6. Tenglik nuqtasini qanday qidirasiz? Natija to'g'rimi: 1 sexda Edge ~1,5 ming $, A100 ~26 ming $ va 24 sexgacha markaz arzonlashmaydimi?
 
 Kutilgan natija: 1/2/4/8 sex uchun TCO jadvallari ($/kamera/oy bilan), tenglik nuqtasi xabari, 3 chiziqli TCO grafigi.
 

@@ -33,65 +33,22 @@ def mlp_pred(Z):
 MODELS = {"LogReg": lr.predict, "RandomForest": rf.predict, "MLP": mlp_pred}
 acc = lambda f, Z: (f(Z) == yte).mean()
 
+# TODO 1: FGSM (MLP, oq quti): yo'qotish gradientini kirish bo'yicha olib, x + eps * sign(grad)
 def fgsm_mlp(Z, eps):
-    x = torch.tensor(Z, dtype=torch.float32, requires_grad=True)
-    g, = torch.autograd.grad(F.cross_entropy(mlp(x), torch.tensor(yte)), x)
-    return (x + eps * g.sign()).detach().numpy()
+    raise NotImplementedError("TODO 1: FGSM MLP uchun")
+
+# TODO 2: multinomial LR uchun analitik gradient dL/dx = (p - onehot) W, so'ng x + eps * sign(...)
 def fgsm_lr(Z, eps):
-    """Multinomial LR uchun analitik gradient: dL/dx = W^T (p - onehot)."""
-    P = lr.predict_proba(Z); P[np.arange(len(yte)), yte] -= 1
-    return Z + eps * np.sign(P @ lr.coef_)
+    raise NotImplementedError("TODO 2: FGSM LR uchun")
 
 print("=== Toza aniqlik ===")
 clean = {m: acc(f, Zte) for m, f in MODELS.items()}
 print("  ".join(f"{m}={a:.3f}" for m, a in clean.items()))
 
-print("\n=== 1) Gauss shovqini (sigma — standartlashgan birlikda) ===")
-noise = {}
-for s in (0.1, 0.3, 0.5, 1.0):
-    Zn = Zte + rng.normal(0, s, Zte.shape); noise[s] = {m: acc(f, Zn) for m, f in MODELS.items()}
-    print(f"sigma={s:<4} " + "  ".join(f"{m}={a:.3f}" for m, a in noise[s].items()))
-
-print("\n=== 2) Bitta sensor uzilishi (qiymat o'rniga o'rtacha = 0 qo'yiladi) ===")
-worst = {}
-for j, nm in enumerate(SENS):
-    Zm = Zte.copy(); Zm[:, j] = 0.0
-    r = {m: acc(f, Zm) for m, f in MODELS.items()}
-    for m in r: worst[m] = min(worst.get(m, 1), r[m])
-    print(f"{nm:<14} " + "  ".join(f"{m}={a:.3f}" for m, a in r.items()))
-
-print("\n=== 3) Kalibrlash drifti: harorat sensori +delta C ===")
-drift = {}
-for dC in (2, 5, 10):
-    Xd = Xte.copy(); Xd[:, 0] += dC; Zd = sc.transform(Xd); drift[dC] = {m: acc(f, Zd) for m, f in MODELS.items()}
-    print(f"+{dC:>2} C  " + "  ".join(f"{m}={a:.3f}" for m, a in drift[dC].items()))
-
-print("\n=== 4) Adversarial (FGSM, L_inf, standartlashgan birlikda) ===")
-EPS = [0.05, 0.1, 0.2, 0.3]; adv = {m: [] for m in MODELS}
-for e in EPS:
-    Za_mlp, Za_lr = fgsm_mlp(Zte, e), fgsm_lr(Zte, e)
-    adv["MLP"].append(acc(mlp_pred, Za_mlp)); adv["LogReg"].append(acc(lr.predict, Za_lr))
-    adv["RandomForest"].append(acc(rf.predict, Za_mlp))               # RF: gradient yo'q -> MLP dan ko'chirilgan hujum
-    print(f"eps={e:<5} MLP(oq quti)={adv['MLP'][-1]:.3f}  LogReg(oq quti)={adv['LogReg'][-1]:.3f}  RF(ko'chirilgan)={adv['RandomForest'][-1]:.3f}")
-
+# TODO 3: Gauss shovqini sigma = 0.1, 0.3, 0.5, 1.0 (standartlashgan birlikda) — har model aniqligi
+# TODO 4: har bir sensor uzilishi: ustunni o'rtacha (=0) bilan almashtirib, eng yomon natijani saqlang
+# TODO 5: harorat sensoriga +2/+5/+10 C drift (XOM qiymatga qo'shib, keyin standartlang)
+# TODO 6: FGSM eps = 0.05..0.3: MLP va LR oq quti, RF — MLP dan ko'chirilgan hujum
+Za = fgsm_mlp(Zte, 0.2)      # TODO 1 tayyor bo'lsa, shu yerdan hujumlarni boshlang
 print("\n=== Qabul mezonlari bo'yicha xulosa (pasayish, foiz punktlarda) ===")
-CRIT = [("shovqin sigma=0.3", lambda m: clean[m] - noise[0.3][m], 5), ("eng yomon sensor uzilishi", lambda m: clean[m] - worst[m], 10),
-        ("harorat drifti +5 C", lambda m: clean[m] - drift[5][m], 5), ("FGSM eps=0.2", lambda m: clean[m] - adv[m][2], 10)]
-rows = []
-for m in MODELS:
-    row = {"model": m}
-    for name, fn, lim in CRIT:
-        d = 100 * fn(m); row[name] = f"{d:5.1f} {'OK' if d <= lim else 'XATO'}"
-    rows.append(row)
-print(pd.DataFrame(rows).to_string(index=False))
-print("Chegaralar: shovqin <= 5, sensor <= 10, drift <= 5, FGSM(eps=0.2) <= 10 p.p. (o'quv misoli uchun tanlangan)")
-
-fig, ax = plt.subplots(1, 2, figsize=(10, 3.5))
-for m in MODELS:
-    ax[0].plot([0, .1, .3, .5, 1.0], [clean[m]] + [noise[s][m] for s in (0.1, 0.3, 0.5, 1.0)], "-o", label=m)
-    ax[1].plot([0] + EPS, [clean[m]] + adv[m], "-o", label=m)
-ax[0].set_xlabel("shovqin sigma"); ax[1].set_xlabel("FGSM eps"); ax[0].set_ylabel("aniqlik")
-for a in ax: a.grid(alpha=.3); a.legend(fontsize=8)
-plt.tight_layout()
-print("\nIzoh: real tizimda testlar haqiqiy sensor yozuvlari, uskunaning ekspluatatsiya rejimlari va formal")
-print("verifikatsiya (masalan, intervallar bilan chegaralash) bilan to'ldiriladi; natija texnik hujjatga kiritiladi.")
+# TODO 7: pasayishni (p.p.) mezonlar bilan solishtirib OK/XATO jadvali: shovqin<=5, sensor<=10, drift<=5, FGSM(0.2)<=10

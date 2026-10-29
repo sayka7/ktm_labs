@@ -5,9 +5,8 @@ Kichik CNN digits ustida o'qitilib, PyTorch eager statik kvantlash (qnnpack) bil
 Kutilgan natija: FP32 va INT8 aniqligi deyarli teng (~0,95), hajm ~3,5x kichik; CPU'da batch=1 da INT8 tez bo'lmasligi mumkin, batch 64 da tezroq; SQNR ~40-47 dB; bo'linish modelida o'tishlar 5 -> 3, kechikish ~3,0 -> 2,4 ms.
 """
 # 4-qadam. NPU uchun INT8 kvantlash: aniqlik, hajm, kechikish va operatorlarni bo'lish (partitioning)
-# NPU'lar (Hailo, Edge TPU, Ethos, DLA) asosan INT8 da ishlaydi. Biz kichik CNN'ni PyTorch statik kvantlash
-# (qnnpack) bilan INT8 ga o'tkazamiz: per-tensor vs per-channel, kalibrlash hajmi ta'siri va NPU qo'llab-quvvatlamaydigan
-# operatorlar CPU'ga qaytganda (fallback) qancha vaqt yo'qotilishini modellashtiramiz.
+# Kichik CNN'ni PyTorch statik kvantlash (qnnpack) bilan INT8 ga o'tkazamiz: per-tensor vs per-channel,
+# kalibrlash hajmi ta'siri va NPU qo'llamaydigan operatorlar CPU'ga qaytganda (fallback) yo'qotilgan vaqt.
 import warnings; warnings.filterwarnings("ignore")
 import copy, io, time
 import numpy as np
@@ -47,79 +46,34 @@ for ep in range(6):
         idx = perm[i:i + 64]; opt.zero_grad(); lf(m(Ttr[idx]), Tytr[idx]).backward(); opt.step()
 m.eval()
 
-
-def aniqlik(model):
-    with torch.no_grad():
-        return (model(Tte).argmax(1).numpy() == yte).mean()
-
-
-def hajm_kb(model):
-    b = io.BytesIO(); torch.save(model.state_dict(), b); return len(b.getvalue()) / 1024
-
-
-def kechikish_ms(model, batch=1, n=300):
-    x = Tte[:batch]
-    with torch.no_grad():
-        for _ in range(20): model(x)
-        t = []
-        for _ in range(n):
-            t0 = time.perf_counter(); model(x); t.append(time.perf_counter() - t0)
-    return 1e3 * float(np.median(t))
+# TODO 1: aniqlik(model), hajm_kb(model) (state_dict -> BytesIO) va kechikish_ms(model, batch) (median, ms) yozing
+def aniqlik(model): raise NotImplementedError("TODO 1")
+def hajm_kb(model): raise NotImplementedError("TODO 1")
+def kechikish_ms(model, batch=1, n=300): raise NotImplementedError("TODO 1")
 
 
 def kvantla(model, qconfig, n_kalib):
-    q = copy.deepcopy(model); q.qconfig = qconfig
-    q = tq.fuse_modules(q, [["c1", "r1"], ["c2", "r2"], ["fc1", "r3"]])
-    tq.prepare(q, inplace=True)
-    with torch.no_grad():
-        q(Ttr[:n_kalib])                       # kalibrlash: faollashtirish diapazonlari yig'iladi
-    tq.convert(q, inplace=True)
-    return q
+    # TODO 2: nusxa oling, qconfig bering, conv+relu / linear+relu ni birlashtiring (fuse_modules)
+    # TODO 3: prepare -> n_kalib namuna bilan kalibrlash -> convert
+    raise NotImplementedError("TODO 2-3: statik kvantlash")
 
 
-per_tensor = tq.QConfig(activation=tq.MinMaxObserver.with_args(dtype=torch.quint8),
-                        weight=tq.MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric))
-per_channel = tq.QConfig(activation=tq.MinMaxObserver.with_args(dtype=torch.quint8),
-                         weight=tq.PerChannelMinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
+# TODO 4: per-tensor (MinMaxObserver) va per-channel (PerChannelMinMaxObserver) QConfig'larini tuzing
+per_tensor = None
+per_channel = None
 
 print("=== INT8 statik kvantlash (qnnpack, CPU — NPU o'rniga) ===")
-print(f"{'model':32s} {'aniqlik':>8s} {'hajm KB':>8s} {'b=1 ms':>8s} {'b=64 ms':>8s}")
 print(f"{'FP32':32s} {aniqlik(m):8.4f} {hajm_kb(m):8.1f} {kechikish_ms(m):8.3f} {kechikish_ms(m, 64, 100):8.3f}")
-for nom, qc in (("INT8 per-tensor", per_tensor), ("INT8 per-channel", per_channel)):
-    for nk in (8, 256):
-        q = kvantla(m, qc, nk)
-        print(f"{nom + f', kalib={nk}':32s} {aniqlik(q):8.4f} {hajm_kb(q):8.1f} {kechikish_ms(q):8.3f} {kechikish_ms(q, 64, 100):8.3f}")
-print("Hajm ~4x kamayadi. CPU'da INT8 har doim tezroq emas (qnnpack, kichik model) — NPU'da esa INT8 yagona tez yo'l.")
+# TODO 5: 2 xil qconfig x kalibrlash (8, 256) uchun aniqlik, hajm, b=1 va b=64 kechikishini chiqaring
 
-# --- Kvantlash xatosi qatlam bo'yicha (simmetrik per-tensor, NPU uslubi) ---
 print("\n=== Qatlam og'irliklari: INT8 kvantlash xatosi (SQNR, dB) ===")
-for nom, p in m.named_parameters():
-    if p.dim() < 2: continue
-    w = p.detach().numpy(); s = np.abs(w).max() / 127
-    wq = np.clip(np.round(w / s), -127, 127) * s
-    sqnr = 10 * np.log10((w ** 2).sum() / ((w - wq) ** 2).sum())
-    print(f"{nom:12s} shakl={str(tuple(w.shape)):18s} masshtab={s:.5f}  SQNR={sqnr:5.1f} dB")
+# TODO 6: har 2D+ parametr uchun simmetrik INT8 (masshtab = max|w|/127) va SQNR ni hisoblang
 
-# --- Operatorlarni bo'lish: NPU qo'llamaydigan op CPU'da bajariladi, tenzor PCIe orqali qatnaydi ---
 print("\n=== NPU grafik bo'linishi modeli (taxminiy, Hailo-8 kabi M.2 NPU) ===")
 NPU_TOPS, PCIE_GBS, CPU_GOPS = 26 * 0.3, 3.0, 50   # NPU real foydalanish ~30 %, PCIe ~3 GB/s, xost CPU ~50 GOP/s
 OPLAR = [  # (nom, amallar GOP, chiqish tenzori MB, NPU qo'llaydimi)
     ("conv_stem", 0.9, 1.6, True), ("conv_blok1", 2.1, 0.8, True), ("SiLU (qo'llanmaydi)", 0.01, 0.8, False),
     ("conv_blok2", 2.4, 0.4, True), ("NMS/postprocess", 0.05, 0.05, False), ("conv_head", 0.6, 0.2, True)]
+# TODO 7: grafikni ketma-ket yurib, har CPU<->NPU o'tishda mb/PCIE_GBS qo'shing; SiLU -> ReLU variantini solishtiring
 
-
-def ms(gop, npu):  # amal vaqti, ms
-    return gop / (NPU_TOPS * 1e3) * 1e3 if npu else gop / CPU_GOPS * 1e3
-
-
-RELU = [("ReLU", g, mb, True) if "SiLU" in n else (n, g, mb, npu) for n, g, mb, npu in OPLAR]   # SiLU -> ReLU (NPU qo'llaydi)
-for nom_v, oplar in (("asl grafik (SiLU + NMS CPU'da)", OPLAR), ("SiLU -> ReLU almashtirilgan", RELU)):
-    jami = 0.0; joy = "CPU"; utish = 0           # kirish tasviri xost (CPU) xotirasida
-    for nom, gop, mb, npu in oplar:
-        yangi = "NPU" if npu else "CPU"
-        if yangi != joy:
-            jami += mb / PCIE_GBS; utish += 1
-        jami += ms(gop, npu); joy = yangi
-    print(f"{nom_v:34s} kechikish ~{jami:6.2f} ms, CPU<->NPU o'tishlar: {utish}")
-print("Xulosa: bitta qo'llanmaydigan aktivatsiya grafikni bo'lib, PCIe orqali qo'shimcha nusxalashga olib keladi.")
 print("\n=== Kvantlash tahlili tugadi ===")

@@ -1,6 +1,7 @@
 # MT4. Docker va Kubernetes platformalaridan foydalanib sun'iy intellekt modelini joylashtirish (Deployment) va AI xizmatlarini boshqarish bo'yicha amaliy loyiha
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT4_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda siz bitta AI xizmatini (tumor-api — o'sma belgilarini tasniflovchi model) boshidan oxirigacha joylashtirish loyihasini bajarasiz: FastAPI xizmati va avtomatik testlar, qatlamli konfiguratsiya va sog'liq tekshiruvlari, Dockerfile va docker-compose generatsiyasi va validatsiyasi, dev/prod Kubernetes manifestlari (Deployment, Service, HPA, ConfigMap, Secret, Ingress, PDB, NetworkPolicy), rolling update va canary, HPA va Cluster Autoscaler yuklama simulyatsiyasi hamda SLO asosidagi operatsion hisobot. Sandbox'da Docker va Kubernetes yo'q: xizmat jarayon ichida TestClient bilan ishlaydi, fayllar matn sifatida yaratilib Python'da tekshiriladi, klaster xulq-atvori esa simulyatsiya qilinadi. Vaqt, narx va yuklama raqamlari taxminiy.
 
 ## Muhit
@@ -15,7 +16,17 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Loyiha — «tumor-api»: sklearn breast_cancer (30 belgi) bo'yicha o'sma turini tasniflovchi xizmat. Ikki model versiyasi (v1 — logistik regressiya, v2 — tasodifiy o'rmon) o'qitilib, SHA-256 xeshi bilan reestrga (/tmp/models) yoziladi. Xizmat `lifespan` ichida modelni butunlik tekshiruvi va isitish bilan yuklaydi; /startupz, /livez, /readyz alohida, /v1/predict va /v1/predict/batch API kalit (x-api-key) talab qiladi, har javobga x-request-id va x-model-version sarlavhalari qo'shiladi, /metrics Prometheus matn formatida. Oxirida CI'dagi kabi 11 ta avtomatik test TestClient bilan bajariladi. MODEL_VERSION, MAX_BATCH ni o'zgartirib ko'ring.
 
-Fayl: `s1_1_qadam_ai_xizmati_fastapi_model_reestri.py` — ishga tushirish: `python3 s1_1_qadam_ai_xizmati_fastapi_model_reestri.py`
+Fayl: `s1_1_qadam_ai_xizmati_fastapi_model_reestri.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_ai_xizmati_fastapi_model_reestri.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Model reestriga faqat model faylini yozish yetarlimi? Xizmat yuklash paytida fayl buzilmagan va aynan kerakli versiya ekanini qanday bilib oladi?
+2. Nega model har so'rovda emas, `lifespan` ichida bir marta yuklanadi? Yuklagandan keyin bitta «bo'sh» bashorat (isitish) nima uchun kerak?
+3. /startupz, /livez va /readyz probe'lari Kubernetes uchun nimasi bilan farq qiladi? Qaysi biri 503 qaytarishi mumkin va qachon?
+4. Har javobga x-request-id ni qanday qo'shasiz: mijoz yuborgan ID bo'lsa nima qilasiz, bo'lmasa-chi? Bu qayerda — har endpoint ichidami yoki bitta joyda?
+5. 29 ta belgi yuborilganda 422 qaytishi uchun tekshiruvni qayerga qo'yasiz? API kalitsiz so'rov 401, katta paket esa 413 bo'lishi uchun-chi?
+6. Prometheus matn formatida counter va gauge qanday yoziladi? Testda predictions_total nega aynan 133 bo'lishi kerak?
+7. Yakunda nimani kutasiz: v1 aniqligi ~0,96, v2 ~0,94, testlar 11/11 PASS va ~300–400 so'rov/s? FAIL chiqqan test qaysi TODO ga ishora qiladi?
 
 Kutilgan natija: v1 aniqligi ~0,96, v2 ~0,94; 11/11 PASS; ketma-ket ~300-400 so'rov/s; /metrics da predictions_total 133 va model_info.
 
@@ -29,7 +40,16 @@ Tajriba qilib ko'ring:
 
 (a) Sozlamalar uch qatlamdan yig'iladi: standart < ConfigMap (YAML) < muhit o'zgaruvchilari (TUMOR_*); har kalit sxema bo'yicha tur va diapazonga tekshiriladi, sir maskalanadi, xato bo'lsa xizmat ishga tushmaydi (fail fast); konfiguratsiya xeshi Deployment annotatsiyasi uchun hisoblanadi. (b) /readyz model fayli, uning xeshi, disk, xotira, o'z-o'zini sinash va drain holatini tekshiradi; /livez esa bog'liqliklarni tekshirmaydi. (c) Kubelet probe'lari simulyatsiyasi: model 45 s yuklanganda noto'g'ri liveness yoki qisqa startupProbe CrashLoopBackOff'ga olib kelishi ko'rsatiladi. (d) preStop va terminationGracePeriod ning yo'qolgan so'rovlarga ta'siri.
 
-Fayl: `s2_2_qadam_konfiguratsiya_qatlamlari_chuqur.py` — ishga tushirish: `python3 s2_2_qadam_konfiguratsiya_qatlamlari_chuqur.py`
+Fayl: `s2_2_qadam_konfiguratsiya_qatlamlari_chuqur.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_konfiguratsiya_qatlamlari_chuqur.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bitta kalit uch joyda (standart, ConfigMap, muhit o'zgaruvchisi) berilgan bo'lsa, qaysi biri g'olib bo'lishi kerak va nega aynan shu tartib?
+2. Muhit o'zgaruvchilari doim satr bo'lib keladi. "128" ni int ga o'tkazish va "ikki" ni xato deb topish uchun SXEMA dan qanday foydalanasiz?
+3. Nega xato konfiguratsiyada xizmat umuman ishga tushmasligi (fail fast) yaxshiroq? Konfiguratsiya xeshini Deployment annotatsiyasiga qo'yish nima beradi?
+4. Readiness va liveness probe'lari nimani tekshirishi kerak? Model fayli buzilganda /livez ham 503 qaytarsa nima bo'ladi?
+5. Model 45 s yuklansa, liveness 10 s kechikish bilan 5 s periodda 3 marta tekshirilsa nima bo'ladi? startupProbe 2 s × 15 bilan-chi?
+6. preStop = 0 bo'lsa, nega Pod to'xtatilganda so'rovlar yo'qoladi? Endpoint yangilanishi 3 s kechiksa va 100 so'rov/s kelsa, taxminan nechta?
 
 Kutilgan natija: To'g'ri konfiguratsiyada OK va config-hash, xatoda 3 ta xato; buzilgan faylda readyz 503, livez 200; 2 ta XATO konfiguratsiyada 6 restart va hech qachon tayyor emas, to'g'rilarida 45 s; preStop=0 da ~300 so'rov yo'qoladi.
 
@@ -43,7 +63,17 @@ Tajriba qilib ko'ring:
 
 Loyiha parametrlaridan ko'p bosqichli (multi-stage) Dockerfile generatsiya qilinadi: builder bosqichida wheel'lar, yakuniy obrazda faqat runtime, root bo'lmagan foydalanuvchi, HEALTHCHECK va exec-shakldagi CMD. 13 qoidali tahlilchi uni ataylab yomon yozilgan Dockerfile bilan solishtiradi. Qatlam keshi xeshlar zanjiri bilan simulyatsiya qilinadi: faqat kod o'zgarganda nechta qatlam qayta qurilishi va yomon tartibda pip ham qayta ishlashi ko'rsatiladi. So'ng API + Redis + Prometheus uchun docker-compose.yml pyyaml bilan yaratiladi va tekshiriladi: obraz teglari, port to'qnashuvi, depends_on + healthcheck, hajm va tarmoqlar e'loni, sirlar, ishga tushish tartibi (topologik saralash) va sikl.
 
-Fayl: `s3_3_qadam_dockerfile_va_docker_compose_gen.py` — ishga tushirish: `python3 s3_3_qadam_dockerfile_va_docker_compose_gen.py`
+Fayl: `s3_3_qadam_dockerfile_va_docker_compose_gen.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_dockerfile_va_docker_compose_gen.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Nega Dockerfile ikki bosqichli (builder va yakuniy) qilinadi? Yakuniy obrazga builder'dan nima o'tadi va nima o'tmaydi?
+2. Xavfsizlik nuqtai nazaridan yakuniy obrazda qaysi uch narsa bo'lishi shart: kim nomidan ishlaydi, sirlar qayerda, sog'liq qanday tekshiriladi?
+3. 13 ta qoidani matndan tekshirish uchun Dockerfile ni qanday bo'laklarga ajratasiz? Masalan, «ENV da sir yo'q» ni qanday regex bilan topasiz?
+4. Docker qatlam keshi qanday ishlaydi: qachon qatlam qayta quriladi? Nega requirements.txt ni koddan oldin alohida COPY qilish kerak?
+5. Faqat app/main.py o'zgarganda yaxshi Dockerfile da nechta qatlam qayta qurilishini kutasiz? requirements o'zgarganda-chi? Yomon Dockerfile da pip nega qayta ishlaydi?
+6. Compose faylda xizmatlar ishga tushish tartibi depends_on dan qanday chiqariladi va sikl bo'lsa buni qanday aniqlaysiz?
+7. Buzilgan compose'da (prometheus 8000 porti, redis healthcheck'siz, API_KEY environment'da, redis → prometheus bog'liqligi) qaysi 4 xato chiqishi kerak?
 
 Kutilgan natija: Yaxshi Dockerfile 13/13, yomoni 0/13; kod o'zgarganda 1 qatlam (~3 s), requirements o'zgarganda 5 qatlam (~200 s, taxminiy); compose OK, tartib redis -> api -> prometheus; buzilgan compose'da 4 xato.
 
@@ -57,7 +87,17 @@ Tajriba qilib ko'ring:
 
 Python generatori bitta parametrlar lug'atidan 9 ta obyekt yaratadi: Namespace, ConfigMap, Secret, Deployment (startup/readiness/liveness probe, preStop, securityContext, topologySpread, checksum/config annotatsiyasi, NAS'dagi PVC), Service, HPA (autoscaling/v2), PodDisruptionBudget, Ingress (TLS) va NetworkPolicy. Kustomize'ga o'xshash chuqur birlashtirish bilan dev va prod overlay'lari olinadi, natija multi-hujjat YAML'ga yozilib qayta o'qiladi. Tekshiruvchi obyekt qoidalari bilan birga obyektlararo moslikni ham ko'radi: Service selector, targetPort, Ingress backend, HPA target, PDB, configMapKeyRef kalitlari. Ataylab buzilgan manifestda tipik xatolar ushlanadi.
 
-Fayl: `s4_4_qadam_kubernetes_manifestlari_generato.py` — ishga tushirish: `python3 s4_4_qadam_kubernetes_manifestlari_generato.py`
+Fayl: `s4_4_qadam_kubernetes_manifestlari_generato.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_kubernetes_manifestlari_generato.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. dev va prod muhitlari bir-biridan nimasi bilan farq qiladi va nega har biri uchun alohida YAML yozmasdan, bitta asos + overlay ishlatiladi?
+2. Deployment da Pod shabloni label'lari, selector va Service selector qanday bog'langan? Qaysi biri mos kelmasa trafik Pod'larga yetmaydi?
+3. ConfigMap o'zgarganda Pod'lar avtomatik qayta yaratilishi uchun nima qilinadi? Konteynerga sozlama va sir qanday yo'llar bilan beriladi?
+4. 1 nusxali dev muhitida PodDisruptionBudget nega zararli? Uni yaratish shartini qanday yozasiz va prod da minAvailable qancha bo'lishi kerak?
+5. Obyektlararo tekshiruvlarni qulay yozish uchun hujjatlarni qanday indekslaysiz? Ingress backend porti Service portiga mosligini qanday tekshirasiz?
+6. CPU "500m" va "1", xotira "512Mi" va "1Gi" ni qanday solishtirasiz? Buzilgan manifestda requests.cpu = "2" qaysi qoidani yiqitadi?
+7. Natijani tekshiring: dev va prod 18/18 PASS, buzilgan manifest 11/18 chiqdimi? YAML'ga yozib qayta o'qish nega foydali?
 
 Kutilgan natija: dev 8 obyekt (1 nusxada PDB yo'q), prod 9 obyekt; dev va prod 18/18 PASS, buzilgan 11/18; Ingress YAML ko'rsatiladi.
 
@@ -71,7 +111,17 @@ Tajriba qilib ko'ring:
 
 (a) Deployment kontrolleri 1 s qadamli modelda simulyatsiya qilinadi: 6 nusxa, har biri 50 so'rov/s, talab 260 so'rov/s, yangi Pod 30 s da tayyor. maxSurge/maxUnavailable kombinatsiyalari, blue/green va Recreate uchun yangilanish davomiyligi, minimal sig'im, yo'qolgan so'rovlar va maksimal Pod soni solishtiriladi. (b) Ikki FastAPI versiyasi TestClient orqali ishga tushadi va vaznli marshrutlovchi (Ingress/Service mesh o'rnida) trafikni 5 -> 25 -> 50 -> 100 % bosqichlarda bo'ladi. Har bosqichda kamida 60 canary namunasi yig'ilib, xato ulushi va p95 kechikish bazaviy versiya bilan solishtiriladi; mezon buzilsa avtomatik orqaga qaytariladi. Sog'lom, nuqsonli va sekin v2 sinab ko'riladi.
 
-Fayl: `s5_5_qadam_versiyani_chiqarish_rollingupdat.py` — ishga tushirish: `python3 s5_5_qadam_versiyani_chiqarish_rollingupdat.py`
+Fayl: `s5_5_qadam_versiyani_chiqarish_rollingupdat.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_versiyani_chiqarish_rollingupdat.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. 6 nusxa × 50 so'rov/s = 300 so'rov/s sig'im va talab 260. Yangilanish paytida bir vaqtda nechta Pod ishlamay qolsa so'rovlar yo'qola boshlaydi?
+2. maxSurge va maxUnavailable Deployment kontrolleriga nimani ruxsat beradi? Har soniyada qaysi tartibda qaror qabul qilinadi?
+3. Recreate strategiyasini qanday modellaysiz va unda nima uchun yo'qotish eng katta? Blue/green (surge=6) ning bahosi nimada?
+4. Natijalaringiz kutilganga mosmi: maxUnavailable=0 da yo'qotish 0, maxUnavailable=1 da ~1800, Recreate da ~7800 so'rov?
+5. Canary'da trafikni w % ehtimol bilan v2 ga qanday yo'naltirasiz? Nega har versiyadan kamida 60 namuna yig'ish kerak?
+6. Avtomatik orqaga qaytarish mezoni qanday bo'lishi kerak? Nega p95 uchun nisbiy (1,5×) bilan birga mutlaq (+2 ms) chegara ham qo'yiladi?
+7. Uch ssenariyda nimani kutasiz: sog'lom v2 100 % gacha chiqadimi, nuqsonli va sekin v2 qaysi bosqichda to'xtaydi?
 
 Kutilgan natija: maxUnavailable=0 da yo'qotish 0, maxUnavailable=1 da ~1800, Recreate da ~7800 so'rov yo'qoladi; canary: sog'lom v2 100 % gacha chiqadi, nuqsonli va sekin v2 5 % bosqichda to'xtatiladi.
 
@@ -85,7 +135,16 @@ Tajriba qilib ko'ring:
 
 HPA'ning haqiqiy algoritmi modellashtiriladi: desired = ceil(current x metrika / nishon), 10 % tolerantlik, bir nechta metrikada maksimum, scaleUp siyosati (15 s da 100 % yoki 4 Pod) va scaleDown uchun 300 s stabilizatsiya oynasi. Pod'lar tugunlarga joylashadi (tugunda 3 Pod), joy yetmasa Pending bo'ladi va Cluster Autoscaler yangi tugun so'raydi (120 s), ortiqcha tugunni 10 daqiqadan keyin olib tashlaydi. Kechikish M/M/c (Erlang C) bilan baholanadi. 6 soatlik kunlik to'lqin va 10 daqiqalik keskin sakrash (+450 so'rov/s) ostida on-prem (4 tugun) va bulut konfiguratsiyalari SLO buzilish daqiqalari, yo'qolgan so'rovlar, Pod-soat va tugun-soat bo'yicha solishtiriladi.
 
-Fayl: `s6_6_qadam_hpa_autoscaling_v2_cluster_autos.py` — ishga tushirish: `python3 s6_6_qadam_hpa_autoscaling_v2_cluster_autos.py`
+Fayl: `s6_6_qadam_hpa_autoscaling_v2_cluster_autos.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_hpa_autoscaling_v2_cluster_autos.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. HPA formulasi desired = ceil(current × metrika / nishon). Agar 4 Pod 90 % CPU da ishlasa va nishon 70 % bo'lsa, nechta Pod tavsiya qilinadi? Tolerantlik 10 % qachon o'zgarishni to'xtatadi?
+2. Nega CPU metrikasi keskin sakrashda yomon ishlaydi, RPS metrikasi esa yaxshiroq? CPU foydalanishni qanday hisoblaysiz va u qayerda to'yinadi?
+3. scaleUp va scaleDown siyosatlari nega nosimmetrik? 300 s stabilizatsiya oynasi qanday «tebranish» (flapping) ni oldini oladi?
+4. Pod yaratildi, lekin tugunda joy yo'q — u qaysi holatda turadi? Cluster Autoscaler qachon yangi tugun so'raydi va qachon olib tashlaydi?
+5. M/M/c navbatida Erlang C nimani bildiradi? Undan p95 javob vaqtini qanday baholaysiz?
+6. Natijani tekshiring: Erlang-C da 300 so'rov/s, 7 Pod p95 ~110 ms, 10 Pod ~64 ms chiqdimi? On-prem 4 tugunda sakrashda ~10 daqiqa SLO buzilishi va ~110 ming so'rov yo'qolishi kutiladi — nega aynan shuncha?
 
 Kutilgan natija: On-prem 4 tugunda sakrashda ~10 daqiqa SLO buzilishi va ~110 ming so'rov yo'qoladi; bulut CA bilan ~1,5-5 daqiqa; Erlang-C: 300 so'rov/s da 7 Pod p95 ~110 ms, 10 Pod ~64 ms.
 
@@ -99,7 +158,17 @@ Tajriba qilib ko'ring:
 
 30 kunlik daqiqalik so'rov/xato qatori (kunlik to'lqin, 12 % o'sish, ikki insident: keskin va sekin) sintetik yaratiladi. SLO 99,9 % uchun xato byudjeti va uning sarfi, Google SRE Workbook'dagi ko'p oynali burn-rate qoidalari (1 soat/5 daq > 14,4x, 6 soat/30 daq > 6x, 3 kun/6 soat > 1x) hisoblanib, har insidentni aniqlash kechikishi topiladi. Shu qoidalar asosida PrometheusRule (monitoring.coreos.com/v1) YAML generatsiya qilinadi va validatsiya qilinadi. Oxirida kunlik cho'qqi trendi bo'yicha sig'im prognozi va oldingi qadamlar natijalarini jamlovchi Go/No-Go nazorat ro'yxati.
 
-Fayl: `s7_7_qadam_operatsion_hisobot_slo_xato_byud.py` — ishga tushirish: `python3 s7_7_qadam_operatsion_hisobot_slo_xato_byud.py`
+Fayl: `s7_7_qadam_operatsion_hisobot_slo_xato_byud.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_operatsion_hisobot_slo_xato_byud.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. SLO 99,9 % bo'lsa, 30 kunlik xato byudjeti nima va u qanday birlikda o'lchanadi? Mavjudlik ~99,92 % bo'lganda byudjetning qancha qismi sarflangan bo'ladi?
+2. Burn rate 1x, 6x va 14,4x nimani anglatadi? 14,4x tezlikda 30 kunlik byudjet qancha vaqtda tugaydi?
+3. 43200 daqiqalik qatorda 3 kunlik (4320 daq) sirpanuvchi oyna yig'indisini sikl bilan hisoblash juda sekin. Buni bir harakatda qanday qilasiz?
+4. Nega har qoida ikki oynani (uzun VA qisqa) talab qiladi? Faqat uzun oyna bo'lsa insident tugagandan keyin nima bo'ladi?
+5. Keskin (40 daq, 15 % xato) va sekin (12 soat, 1,2 % xato) insidentlarni qaysi qoidalar ushlashini kutasiz? Aniqlanish kechikishini qanday topasiz?
+6. PrometheusRule YAML ni yaratgandan keyin uni qaysi xatolarga tekshirasiz? Nega «page» darajasidagi ogohlantirishda runbook_url majburiy?
+7. Sig'im prognozida kunlik cho'qqining chiziqli trendini qanday topasiz va «necha kun qoldi» ni qanday hisoblaysiz? Go/No-Go qarori qachon GO bo'ladi?
 
 Kutilgan natija: Mavjudlik ~99,92 %, byudjet sarfi ~84 %; keskin insident 5 daqiqada, sekin insident faqat 6 soatlik va 3 kunlik qoidalarda aniqlanadi; PrometheusRule VALID (5 qoida); sig'im ~45 kunga yetadi; QAROR: GO.
 

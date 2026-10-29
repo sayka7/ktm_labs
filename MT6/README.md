@@ -1,6 +1,7 @@
 # MT6. Sun'iy intellektga asoslangan kompyuter tizimlarining xavfsizligi, ishonchliligi va etik tamoyillarini xalqaro standartlar (ISO/IEC 42001, ISO/IEC 23894, EU AI Act) asosida tahlil qilish va takomillashtirish
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT6_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda talaba AI boshqaruvi (governance) vositalarini kod sifatida quradi: ISO/IEC 23894 uslubidagi xavf reyestri, EU AI Act xavf toifasini aniqlovchi qoida dvigateli, kesishgan guruhlar bo'yicha fairness audit va yumshatish, sensor ma'lumotidagi mustahkamlik testlari, tushuntiriluvchanlik tahlili, ISO/IEC 42001 asosidagi gap-tahlil hisoboti va byudjet ostida optimal takomillashtirish rejasi. Real labdan farqi: ma'lumotlar sintetik, standart talablari qisqa parafraz ko'rinishida (rasmiy matn o'rnini bosmaydi), narx va ballar shartli; natijalar o'quv maqsadidagi taxminiy baholardir, yuridik xulosa emas.
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Kredit skoring tizimi profili (shaxsiy ma'lumot, avtomatik qaror, inson nazorati yo'q, tashqi API, drift) asosida 12 ta xavfdan iborat katalog baholanadi: profil modifikatorlari ehtimollik (L) va ta'sirni (I) o'zgartiradi, xavf = L x I, daraja (past/o'rta/yuqori/kritik). Nazorat choralari qoldiq xavfni hisoblaydi; xavf ishtahasi (8) bo'yicha ishlov qarori chiqadi (qabul, kamaytirish, eskalatsiya). Ekspert bahosidagi +-1 noaniqlik Monte Karlo bilan baholanadi, ikki issiqlik xaritasi (oldin/keyin) chiziladi.
 
-Fayl: `s1_1_qadam_ai_tizimi_xavf_reyestri_generato.py` — ishga tushirish: `python3 s1_1_qadam_ai_tizimi_xavf_reyestri_generato.py`
+Fayl: `s1_1_qadam_ai_tizimi_xavf_reyestri_generato.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_ai_tizimi_xavf_reyestri_generato.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Xavf reyestridagi har bir xavf qaysi ikki kattalik bilan baholanadi va nega ular ko'paytiriladi, qo'shilmaydi?
+2. Tizim profili (shaxsiy ma'lumot, inson nazorati yo'q, tashqi API, drift) bazaviy baholarni qanday o'zgartiradi? Natija 1..5 dan chiqib ketsa nima qilasiz?
+3. Nazorat choralari qoldiq xavfni qanday kamaytiradi? Bir xavfga bir nechta chora bo'lsa, ularning ta'sirini qanday birlashtirasiz?
+4. Xavf ishtahasi 8 bo'lsa, qaysi xavflar qabul qilinadi, qaysilari eskalatsiyaga chiqadi? Qaror tartibi nega muhim?
+5. Jami xavf yig'indisi choralardan keyin qancha kamayishi kerak? Bu raqamni qanday tekshirasiz?
+6. Ekspert L va I ni +-1 xato bilan berishi mumkin. Bitta xavf uchun 'qoldiq ishtahadan oshish ehtimoli'ni qanday baholaysiz?
 
 Kutilgan natija: Jami xavf ~126 dan ~75 ga tushadi (~40%); choralari yo'q R08, R02, R10 eskalatsiyaga chiqadi; R08 uchun P(qoldiq > 8) ~0,8. Ikki 5x5 issiqlik xaritasi.
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 Regulation (EU) 2024/1689 mantig'i qoidalar ketma-ketligi sifatida yoziladi: 5-modda taqiqlari (a–h bandlar, 5(1)(f) dagi tibbiy/xavfsizlik istisnosi bilan), 6(1)+I ilova, 6(2)+III ilova (8 soha), 6(3) istisnosi (profillash bo'lsa qo'llanmaydi), 50-modda shaffoflik majburiyatlari va minimal xavf; GPAI modellari (53, 51/55-moddalar) alohida belgilanadi. 15 ssenariy tasniflanadi, kutilgan javob bilan solishtiriladi, kredit skoringi uchun majburiyatlar ro'yxati va asosiy muddatlar chiqadi. Bu o'quv soddalashtirishi, yuridik xulosa emas.
 
-Fayl: `s2_2_qadam_eu_ai_act_xavf_toifasini_aniqlov.py` — ishga tushirish: `python3 s2_2_qadam_eu_ai_act_xavf_toifasini_aniqlov.py`
+Fayl: `s2_2_qadam_eu_ai_act_xavf_toifasini_aniqlov.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_eu_ai_act_xavf_toifasini_aniqlov.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. EU AI Act tizimlarni qaysi toifalarga ajratadi va nega qoidalarni qat'iy tartibda (taqiq -> yuqori xavf -> shaffoflik -> minimal) tekshirish kerak?
+2. Ish joyida hissiyotni aniqlash taqiqlangan, lekin zavodda haydovchi charchoqini aniqlash taqiqlanmagan. Buni dvigatelda qanday ifodalaysiz?
+3. Tizim III ilova sohasida (masalan, bandlik) bo'lsa ham qachon 'yuqori xavf' hisoblanmasligi mumkin? Profillash bu istisnoga qanday ta'sir qiladi?
+4. Kredit skoringi uchun majburiyatlar ro'yxati umumiy yuqori xavf ro'yxatidan nimasi bilan farq qiladi va nechta bo'lishi kerak?
+5. Chatbot ortidagi katta til modeli uchun toifa va GPAI belgisi nega alohida-alohida aniqlanadi?
+6. Dvigatelingiz to'g'ri ishlashini qanday tekshirasiz? 15 ssenariydan biri mos kelmasa, xatoni qayerdan qidirasiz?
 
 Kutilgan natija: 15/15 ssenariy kutilgan toifaga mos; kredit skoringi — YUQORI XAVF, 12 majburiyat (27-modda FRIA bilan); chatbot ortidagi katta model — qo'shimcha GPAI tizimli xavf belgisi.
 
@@ -43,7 +62,17 @@ Tajriba qilib ko'ring:
 
 Ishga qabul (III-4 soha) sintetik ma'lumotida tarixiy qarorlar «ish tanaffusi» (jins vakili) va >45 yosh bo'yicha tarafkash. Fairlearn MetricFrame ikki sezgir atribut bilan 6 kesishgan guruh uchun tanlov ulushi, TPR, FPR beradi; disparate impact (eng kam/eng ko'p tanlov) 4/5 qoidasi bilan tekshiriladi. To'rt variant taqqoslanadi: bazaviy, vakil belgilarsiz, Kamiran–Calders qayta tortish (qo'lda) va ExponentiatedGradient (DemographicParity, kesishgan guruh bo'yicha).
 
-Fayl: `s3_3_qadam_fairness_audit_kesishgan_guruhla.py` — ishga tushirish: `python3 s3_3_qadam_fairness_audit_kesishgan_guruhla.py`
+Fayl: `s3_3_qadam_fairness_audit_kesishgan_guruhla.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_fairness_audit_kesishgan_guruhla.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu ma'lumotda tarafkashlik qayerdan keladi: modeldanmi yoki yorliqlardanmi? Bu 'aniqlik' metrikasini qanday talqin qilishga ta'sir qiladi?
+2. Nega jins va yoshni alohida emas, kesishgan guruhlar (6 ta) bo'yicha tekshirish kerak?
+3. 4/5 qoidasi nimani talab qiladi va disparate impact ni guruhlar tanlov ulushlaridan qanday hisoblaysiz?
+4. Vakil belgilarni (ish tanaffusi, bitirgan yil) olib tashlash adolatni nega yaxshilamasligi mumkin?
+5. Qayta tortishda (guruh, yorliq) juftligiga qanday vazn berasiz, toki guruh va yorliq statistik mustaqil bo'lib qolsin?
+6. ExponentiatedGradient o'qitish jarayonida nimani cheklaydi va sensitive_features sifatida nimani berasiz?
+7. To'rt variantni taqqoslaganda DI va aniqlik qanday o'zgarishini kutasiz? Murosa qanchalik qimmat?
 
 Kutilgan natija: Bazaviy DI ~0,5 (4/5 qoidasidan o'tmaydi); vakil belgilarni olib tashlash DI ni yaxshilamaydi, qayta tortish ~0,7, ExpGrad ~0,77 ga ko'taradi, aniqlik 1–4 bandga pasayadi.
 
@@ -57,7 +86,16 @@ Tajriba qilib ko'ring:
 
 Zavod uskunasi holatini 6 sensor bo'yicha tasniflovchi uch model (LogReg, RandomForest, PyTorch MLP) ISO/IEC TR 24029-1 ruhidagi empirik testlardan o'tadi: Gauss shovqini, har bir sensorning uzilishi (o'rtacha qiymat bilan to'ldirish), harorat sensorining +2/5/10 C drifti va FGSM (MLP va LR uchun oq quti — LR gradienti analitik, RF uchun MLP'dan ko'chirilgan hujum). Natijalar oldindan belgilangan qabul mezonlari bilan OK/XATO jadvaliga keltiriladi.
 
-Fayl: `s4_4_qadam_mustahkamlik_testi_shovqin_senso.py` — ishga tushirish: `python3 s4_4_qadam_mustahkamlik_testi_shovqin_senso.py`
+Fayl: `s4_4_qadam_mustahkamlik_testi_shovqin_senso.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_mustahkamlik_testi_shovqin_senso.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Mustahkamlik testi aniqlik testidan nimasi bilan farq qiladi? Bu bosqichda qaysi 4 xil buzilish modellashtiriladi va har biri real zavodda nimaga mos keladi?
+2. Sensor uzilishini qanday simulyatsiya qilasiz va nega standartlashgan fazoda 0 qiymati 'o'rtacha bilan to'ldirish'ga teng?
+3. Harorat driftini qaysi fazoda qo'shish kerak: xom (C) yoki standartlashgan? Nega?
+4. FGSM qanday ishlaydi va eps nimani bildiradi? Gradient belgisi (sign) nega ishlatiladi?
+5. Logistik regressiya uchun gradientni avtograd'siz qanday topasiz? RandomForest uchun gradient umuman yo'q bo'lsa, qanday hujum qilasiz?
+6. Qabul mezonlarini qanday qo'yasiz va natijani qanday o'qiysiz? Qaysi testlarda XATO kutasiz?
 
 Kutilgan natija: Toza aniqlik ~0,95–0,96; harorat sensori uzilishi ~11–13 p.p. pasayish beradi (mezon 10 — XATO); +10 C drift RF ni ~0,65 ga tushiradi; FGSM eps=0,2 da MLP mezondan o'tmaydi, ko'chirilgan hujum RF ga kuchsizroq.
 
@@ -71,7 +109,16 @@ Tajriba qilib ko'ring:
 
 Mikrokredit sintetik ma'lumotida (7 belgi, shundan bittasi ataylab ta'sirsiz) GradientBoosting o'qitiladi. Global muhimlik ikki usulda (permutatsion va SHAP TreeExplainer) hisoblanib, Kendall tau bilan solishtiriladi; 5 bootstrap qayta o'qitishda SHAP top-3 barqarorligi tekshiriladi; chuqurligi 3 bo'lgan surrogat daraxtning sodiqligi (fidelity) va qoidalari chiqadi. Rad etilgan ariza uchun «tushuntirish xati» (eng salbiy 3 omil) va bitta omilli kontrfaktual izohlar yaratiladi.
 
-Fayl: `s5_5_qadam_tushuntiriluvchanlik_permutatsio.py` — ishga tushirish: `python3 s5_5_qadam_tushuntiriluvchanlik_permutatsio.py`
+Fayl: `s5_5_qadam_tushuntiriluvchanlik_permutatsio.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_tushuntiriluvchanlik_permutatsio.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Global muhimlik va lokal izoh qanday savollarga javob beradi? Mikrokredit arizachisi uchun qaysi biri muhimroq va nega?
+2. Permutatsion muhimlik va SHAP muhimlikni qanday o'lchaydi? Ular bir xil savolga javob beradimi?
+3. Ataylab qo'shilgan 'tasodifiy_belgi' ikkala usulda qayerda turishi kerak va bu nima uchun foydali tekshiruv?
+4. Izohlar barqarorligini qanday tekshirasiz? Bootstrap qayta o'qitishda top-3 o'zgarsa bu nimani anglatadi?
+5. Surrogat daraxtni haqiqiy yorliqlarga emas, nimaga o'qitish kerak? Sodiqlik (fidelity) qanday hisoblanadi?
+6. Rad etilgan ariza uchun kontrfaktual izohni qanday topasiz va qaysi omillarni o'zgartirishni taklif qilmaslik kerak?
 
 Kutilgan natija: Aniqlik ~0,81; ikki usul top-4 da kelishadi (tau ~0,6), ta'sirsiz belgi ikkalasida ham eng past; bootstrap top-3 to'plami ~100% barqaror; surrogat sodiqligi ~0,89.
 
@@ -85,7 +132,16 @@ Tajriba qilib ko'ring:
 
 22 talab (ISO/IEC 42001 4–10 bandlari va A.2–A.10 nazorat sohalari, ISO/IEC 23894 xavf jarayoni, EU AI Act 12, 14, 15, 17, 73-moddalari) qisqa parafraz ko'rinishida beriladi. Tashkilotning joriy yetukligi (0–5) va dalili CURRENT lug'atidan olinadi; dalilsiz yuqori baho avtomatik pasaytiriladi. Xavf toifasiga qarab maqsadli yetuklik belgilanadi, gap va ustuvorlik (gap x vazn) hisoblanib, Markdown hisobot (qamrov, top-8 bo'shliq, xulosa) va standartlar orasidagi bog'lanishlar chiqadi.
 
-Fayl: `s6_6_qadam_muvofiqlik_tekshiruv_royxati_va_.py` — ishga tushirish: `python3 s6_6_qadam_muvofiqlik_tekshiruv_royxati_va_.py`
+Fayl: `s6_6_qadam_muvofiqlik_tekshiruv_royxati_va_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_muvofiqlik_tekshiruv_royxati_va_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Gap-tahlil qanday savolga javob beradi: 'biz qayerdamiz' va 'qayerda bo'lishimiz kerak'. Bu ikki holat qaysi o'zgaruvchilarda berilgan?
+2. Nega dalilsiz qo'yilgan yuqori yetuklik bahosi pasaytirilishi kerak? Auditor nuqtai nazaridan bu qanday tamoyil?
+3. Ikki bo'shliq bir xil gap ga ega bo'lsa, qaysi biri ustuvorroq? Ustuvorlikni qanday hisoblaysiz?
+4. Umumiy muvofiqlik indeksida maqsaddan oshgan yetuklik hisobga olinishi kerakmi? Indeks formulasi qanday bo'ladi?
+5. Manba (ISO/IEC 42001, 23894, EU AI Act) bo'yicha qamrovni qanday ajratib olasiz va hisobotda nega bu kesim foydali?
+6. Hisobot xulosasi qachon 'joriy etishdan oldin yopish SHART' deyishi kerak? Bu bosqichda nechta majburiy talab bajarilmagan chiqishini kutasiz?
 
 Kutilgan natija: Umumiy muvofiqlik indeksi ~42/100; eng ustuvor bo'shliqlar — ta'sirni baholash (A.5) va jiddiy hodisalar tartibi (73-modda); 7 ta majburiy talab bajarilmagan -> «joriy etishdan oldin yopish SHART».
 
@@ -99,7 +155,16 @@ Tajriba qilib ko'ring:
 
 13 chora (narx, muddat, qaysi gap va xavflarni yopishi, bog'liqliklar) orasidan 250 mln so'm (shartli) byudjetda eng katta qiymat beradigan to'plam to'liq qidiruv (8192 kombinatsiya) bilan topiladi va ochko'z usul bilan taqqoslanadi. Tanlangan choralar 2 jamoa va bog'liqliklarni hisobga olib haftalarga joylashtiriladi (ro'yxatli rejalashtirish), PDCA bosqichiga ajratiladi; Markdown yo'l xaritasi, vaznli gap va xavf «oldin/keyin», KPI ro'yxati va Gantt diagrammasi chiqadi.
 
-Fayl: `s7_7_qadam_takomillashtirish_rejasi_byudjet.py` — ishga tushirish: `python3 s7_7_qadam_takomillashtirish_rejasi_byudjet.py`
+Fayl: `s7_7_qadam_takomillashtirish_rejasi_byudjet.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_takomillashtirish_rejasi_byudjet.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu masala qanday optimallashtirish masalasiga o'xshaydi? Nima maksimallashtiriladi va qanday cheklovlar bor?
+2. Ikki chora bitta gap ni yopsa, qiymat ikki marta hisoblanishi kerakmi? Gapdan ortiq yopilgan darajani qanday hisoblaysiz?
+3. 13 ta chora uchun barcha kombinatsiyalarni ko'rib chiqish real vaqtda mumkinmi? Nechta kombinatsiya va qaysi kutubxona funksiyasi yordam beradi?
+4. Ochko'z usul nega optimumni topmasligi mumkin? M2 kabi o'zi kam qiymatli, lekin boshqa choralarga yo'l ochuvchi chora bilan nima bo'ladi?
+5. Tanlangan choralarni 2 jamoa bilan haftalarga qanday joylashtirasiz? Chora qachon eng erta boshlanishi mumkin?
+6. Reja natijasini qanday baholaysiz: qancha vaznli gap yopildi va qaysi xavflar ishtahadan (8) yuqori qoldi?
 
 Kutilgan natija: Optimal to'plam qiymati ~94,5, ochko'z usul ~77,5 (bog'liqlik tufayli M2 ni o'tkazib yuboradi); reja ~14 hafta, vaznli gap ~80% yopiladi, R01 va R07 ishtahadan yuqori qoladi.
 

@@ -1,6 +1,7 @@
 # A2. GPU va sun'iy intellekt tezlatkichlaridan foydalangan holda parallel hisoblashni tashkil etish
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A2_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz matritsa ko'paytirish va konvolyutsiyani — neyron tarmoqning asosiy yadrolarini — bir necha darajada parallellashtirasiz va bir xil metodika (isinish, takror, median) bilan o'lchaysiz: sof Python → NumPy vektorlash → Numba @njit va prange (OpenMP muqobili) → kesh bloklash → PyTorch iplari → multiprocessing → Amdahl qonuni. Muhim: sandbox'da CUDA va GPU mavjud emas, shuning uchun real labdagi CUDA yadrolari va Tensor Core o'lchovlari o'rniga 2 yadroli CPU'da parallelizm o'rganiladi; har qadam oxirida «GPU bo'lsa shu kod qanday o'zgaradi» izohi berilgan. Massivlar kichik (n ≤ 1024), chunki Numba birinchi kompilyatsiyasi va 2 yadro vaqt chegarasini talab qiladi.
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Uch sikldagi sof Python matritsa ko'paytirish (n=64, 128) va NumPy BLAS chaqiruvi bir xil metodika bilan o'lchanadi, GFLOP/s va tezlanish hisoblanadi; so'ng 1M elementli GELU uchun list comprehension va vektorlangan NumPy solishtiriladi. Kutilgan natija: matmul'da 250–500×, GELU'da ~10× tezlanish; NumPy'ning oraliq massivlar tufayli xotira trafigi ko'rsatiladi. n va N ni o'zgartirib tezlanish qanday o'sishini kuzating.
 
-Fayl: `s1_1_qadam_sof_python_vs_numpy_vektorlash.py` — ishga tushirish: `python3 s1_1_qadam_sof_python_vs_numpy_vektorlash.py`
+Fayl: `s1_1_qadam_sof_python_vs_numpy_vektorlash.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_sof_python_vs_numpy_vektorlash.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bitta o'lchov o'rniga nega isinish + bir necha takrorning mediani olinadi? O'rtacha qiymat qaysi holatda aldaydi?
+2. n×n matritsalarni ko'paytirishda nechta suzuvchi nuqtali amal (FLOP) bajariladi? GFLOP/s qanday topiladi?
+3. Uch siklning ijk o'rniga ikj tartibda yozilishi sof Python'da nima beradi? Ichki siklda qaysi qatorlarni oldindan o'zgaruvchiga olish mumkin?
+4. Sof Python ~0,04 GFLOP/s, NumPy FP64 10–20 GFLOP/s bo'lsa, tezlanish taxminan qancha chiqishi kerak? Natijangiz to'g'riligini qanday isbotlaysiz?
+5. GELU formulasidagi har bir amal NumPy'da alohida o'tish bo'lsa, 1M FP32 element uchun xotira orqali qancha bayt o'tadi?
+6. Nega matmul'da tezlanish yuzlab marta, GELU'da esa atigi ~10× (236 ms vs 21 ms)? Qaysi resurs har birida cheklovchi?
 
 Kutilgan natija: Sof Python ~0,04 GFLOP/s, NumPy FP64 10–20 GFLOP/s, FP32 n=1024 da ~45 GFLOP/s; GELU 236 ms vs 21 ms.
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 @njit matmul (ikj) kompilyatsiya qilinadi, parallel=True + prange varianti 1 va 2 ipda (numba.set_num_threads) o'lchanadi, NumPy BLAS bilan solishtiriladi; alohida reduktsiya (sum x²) misoli 2 ipda xotira o'tkazuvchanligi cheklovini ko'rsatadi. Kutilgan natija: JIT kompilyatsiya ~0,3–1 s, prange 2 ipda ~1,6–1,9× tezlanish, BLAS yana 1,5× tezroq. Bu real labdagi `#pragma omp parallel for` va `reduction(+:s)` ning to'g'ridan-to'g'ri muqobili.
 
-Fayl: `s2_2_qadam_numba_njit_va_prange_openmpning_.py` — ishga tushirish: `python3 s2_2_qadam_numba_njit_va_prange_openmpning_.py`
+Fayl: `s2_2_qadam_numba_njit_va_prange_openmpning_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_numba_njit_va_prange_openmpning_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Numba funksiyasini birinchi marta chaqirganda nega u ancha sekin (0,3–1 s)? Bu vaqtni o'lchov jadvaliga qo'shish to'g'rimi?
+2. OpenMP'dagi `#pragma omp parallel for` ga Numba'da qaysi ikki narsa mos keladi? Qaysi siklni parallellashtirish xavfsiz (poyga holati yo'q)?
+3. Reduktsiyada (s += x[i]*x[i]) bir nechta ip bitta s ga yozsa nima bo'lardi? Numba buni qanday hal qiladi?
+4. 1 va 2 ipni bitta jarayonda qanday almashtirasiz, va prange 2 ipda ideal 2× o'rniga ~1,6–1,9× bersa sabab nima?
+5. Nega NumPy BLAS (~39 GFLOP/s) sizning prange variantingizdan (~27) yana tezroq? Ikj sikl nimani qilmaydi?
+6. Reduktsiya 1 ipda ~11 GB/s, 2 ipda ~22 GB/s bo'lsa, bu hisob yoki xotira cheklovini ko'rsatadimi? GB/s ni qaysi bayt soni bilan hisoblaysiz?
 
 Kutilgan natija: Kompilyatsiya vaqtlari, threading layer nomi, 4 qatorli jadval (seq ~16 GFLOP/s, prange 2 ip ~27, BLAS ~39), reduktsiya 11 → 22 GB/s.
 
@@ -43,7 +62,16 @@ Tajriba qilib ko'ring:
 
 Uch algoritm bir ipda solishtiriladi: naive ijk (B ustun bo'ylab — har qadam yangi kesh satri), ikj (qator bo'ylab, vektorlashadi) va bloklangan (tiled) variant; so'ng blok o'lchami 8…256 ta'siri o'lchanadi. Kutilgan natija: ijk → ikj ~10× tezlanish; kichik bloklar sikl xarajati tufayli sekin, 128–256 da ikj darajasiga yetadi. Kodda Numba'ning muhim nozik jihati ko'rsatilgan: range(jj, jj+bs) indekslari manfiy-tekshiruv tufayli vektorlashmaydi, slice bilan hal qilinadi.
 
-Fayl: `s3_3_qadam_kesh_bloklash_tiled_vs_naive_mat.py` — ishga tushirish: `python3 s3_3_qadam_kesh_bloklash_tiled_vs_naive_mat.py`
+Fayl: `s3_3_qadam_kesh_bloklash_tiled_vs_naive_mat.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_kesh_bloklash_tiled_vs_naive_mat.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. ijk tartibda B[k, j] ga k bo'ylab murojaat xotirada qanday yuradi (C-tartibli massiv)? Har qadamda nechta yangi kesh satri kerak bo'ladi?
+2. Faqat sikllar tartibini ikj ga almashtirish ~10× tezlanish berishi mumkinmi? Ichki sikl endi qaysi xususiyatga ega bo'ladi?
+3. Bloklashda 6 ta sikl qanday tuziladi: qaysi uchtasi bloklar bo'ylab (qadam bs), qaysilari blok ichida?
+4. Nega Numba `range(jj, jj+bs)` indeksi bilan yozilgan ichki siklni vektorlamaydi, slice olgandan keyin esa vektorlaydi?
+5. Uch blok (A, B, C) bs=64 FP32 da necha KB egallaydi va bu L1/L2 ga sig'adimi? Juda kichik bs (8) nega sekin?
+6. Kutilgan natija: naive ~1,7, ikj ~15–17, tiled ~12 GFLOP/s. Nega bu serverda tiled ikj dan oshmasligi mumkin?
 
 Kutilgan natija: n=256/512/1024 jadvali: naive ~1,7 GFLOP/s, ikj ~15–17, tiled ~12; blok o'lchami jadvali 5 → 15 GFLOP/s.
 
@@ -57,7 +85,16 @@ Tajriba qilib ko'ring:
 
 3×3 konvolyutsiya (16→32 kanal, 96×96) Numba to'g'ridan-to'g'ri sikl (1 ip), prange (1 va 2 ip), NumPy im2col+GEMM va PyTorch conv2d (oneDNN, 1 va 2 ip, batch 8) bilan bajariladi; barcha natijalar etalon bilan solishtiriladi. Kutilgan natija: prange 2 ipda ~2×, im2col ~16×, torch 2 ip ~20× tezlanish; xato < 1e-5. Bu cuDNN'ning implicit GEMM g'oyasini CPU'da ko'rsatadi.
 
-Fayl: `s4_4_qadam_konvolyutsiyani_tort_usulda_para.py` — ishga tushirish: `python3 s4_4_qadam_konvolyutsiyani_tort_usulda_para.py`
+Fayl: `s4_4_qadam_konvolyutsiyani_tort_usulda_para.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_konvolyutsiyani_tort_usulda_para.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bitta chiqish piksel uchun nechta ko'paytirish-qo'shish kerak? Butun chiqish (32×94×94) uchun FLOP formulasi qanday?
+2. To'g'ridan-to'g'ri konvolyutsiyada 6 ta siklning qaysi tartibi tabiiy? Qaysi tashqi siklni prange ga berish poyga holatisiz bo'ladi?
+3. im2col g'oyasi: konvolyutsiyani qanday qilib bitta matritsa ko'paytirishga aylantirish mumkin? cols matritsasining o'lchamlari nima bo'ladi?
+4. im2col qo'shimcha xotira sarflaydi (9× kirish), lekin nega shunga qaramay ~16× tez? Bu cuDNN'dagi qaysi g'oyaga o'xshaydi?
+5. torch conv2d ni 1 va 2 ipda, hamda batch 8 bilan o'lchaganda bitta rasm vaqtini qanday adolatli solishtirasiz?
+6. Barcha usullar to'g'ri ekanini qanday ko'rsatasiz va maks xato qanchaga yaqin bo'lishi kerak? Nega aynan nol emas?
 
 Kutilgan natija: 81,4 MFLOP; jadval: Numba 1 ip ~2 GFLOP/s, prange 2 ip ~4, im2col ~33, torch 2 ip ~46 GFLOP/s; maks xato ~5e-6.
 
@@ -71,7 +108,16 @@ Tajriba qilib ko'ring:
 
 torch.cuda.is_available() False ekani ko'rsatiladi va GPU'dagi o'zgarishlar izohlanadi. CPU'da: (a) matmul n=128/512/1024 uchun torch.set_num_threads(1) vs (2) tezlanishi; (b) FP32 vs BF16 vs INT8 (torch._int_mm) — CPU'da maxsus buyruqlar (AVX512-BF16/VNNI) bo'lmasa past formatlar sekinroq, bu apparat–format mosligi (Co-design) darsidir; (c) GELU eager (7 alohida amal) vs birlashtirilgan F.gelu — xotira trafigi 7× kam. Kutilgan natija: 2 ip katta n da ~2×, BF16 CPU'da 20× sekin, F.gelu ~3× tez.
 
-Fayl: `s5_5_qadam_pytorch_gpu_orniga_kop_yadro_1_v.py` — ishga tushirish: `python3 s5_5_qadam_pytorch_gpu_orniga_kop_yadro_1_v.py`
+Fayl: `s5_5_qadam_pytorch_gpu_orniga_kop_yadro_1_v.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_pytorch_gpu_orniga_kop_yadro_1_v.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Kichik matritsada (n=128) 2 ip nega deyarli foyda bermaydi, n=1024 da esa ~1,98× ga yaqinlashadi?
+2. Bitta jarayonda 1 ip va 2 ip vaqtini qanday adolatli solishtirasiz? Lambda ichida nima o'lchanadi va isinish nega kerak?
+3. INT8 matmul uchun float matritsani qanday kvantlash mumkin? Natijani qaytib FP32 masshtabga qanday keltirasiz?
+4. Nega bu CPU'da BF16 FP32 dan ~20× sekin chiqadi, GPU Tensor Core'da esa tezroq? Bu Co-design haqida nima deydi?
+5. Eager GELU formulasida nechta alohida amal (yadro) bor va har biri 32 MB massivni necha marta o'qib-yozadi?
+6. F.gelu eager'dan ~3× tez (45–80 ms vs 130–220 ms) bo'lsa, bu farq hisob kamayganidanmi yoki xotira trafigidanmi? Buni qanday raqam bilan ko'rsatasiz?
 
 Kutilgan natija: Iplar jadvali (1024 da 1,98× tezlanish), formatlar jadvali (FP32 ~50 GFLOP/s, BF16 ~2, INT8 ~4), GELU: eager ~130–220 ms, F.gelu ~45–80 ms.
 
@@ -85,7 +131,16 @@ Tajriba qilib ko'ring:
 
 600 ta sintetik kadr uchun Python+NumPy oldindan ishlov (Sobel, filtr, gistogramma) ketma-ket va multiprocessing.Pool (fork, 1 va 2 jarayon, chunksize 1/25/150) bilan bajariladi; tezlanish, samaradorlik va Pool yaratish xarajati o'lchanadi, natija ketma-ket bilan taqqoslanib tekshiriladi. Kutilgan natija: 2 jarayonda ~1,9–2,4× (chunksize kattaroq bo'lsa yaxshiroq), Pool ochish ~10–50 ms. Bu DDP'dagi «har qurilma o'z ulushini ishlaydi» g'oyasining CPU muqobili.
 
-Fayl: `s6_6_qadam_malumot_parallelligi_multiproces.py` — ishga tushirish: `python3 s6_6_qadam_malumot_parallelligi_multiproces.py`
+Fayl: `s6_6_qadam_malumot_parallelligi_multiproces.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_malumot_parallelligi_multiproces.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Nega bu vazifada threading o'rniga multiprocessing tanlanadi? GIL qaysi turdagi kodni to'xtatib qo'yadi?
+2. Sobel gradient va 3x3 o'rtacha filtrni sikllarsiz, faqat massiv bo'laklari (slice) bilan qanday ifodalaysiz?
+3. Pool.map ishni jarayonlarga qanday taqsimlaydi va chunksize=1 bilan 150 orasidagi farq nimada?
+4. Samaradorlik qanday hisoblanadi va 2 jarayonda 100 % dan oshib ketsa (2,4×), bu qanday bo'lishi mumkin?
+5. Parallel natija ketma-ket natija bilan aynan bir xil ekanini qanday kafolatlaysiz va nega bu tekshiruv muhim?
+6. Pool ochish 10–50 ms bo'lsa, qancha davom etadigan vazifa uchun parallelizm o'zini oqlaydi? DDP'da bu qaysi bosqichga o'xshaydi?
 
 Kutilgan natija: Ketma-ket ~0,6 s; jadval 6 qator (jarayonlar × chunksize), 2 jarayonda ~2× tezlanish; Pool xarajati xabari.
 
@@ -99,7 +154,16 @@ Tajriba qilib ko'ring:
 
 S(n)=1/((1−p)+p/n) jadvali p=0,5…0,99 uchun chiqariladi; so'ng «dastur» = Python ketma-ket qism + torch matmul 1 va 2 ipda o'lchanib, S(2) dan parallel ulush p baholanadi va shu p bilan 8 hamda 1024 yadrodagi (GPU) tezlanish bashorat qilinadi. Grafikda Amdahl egri chiziqlari, o'lchangan nuqta va Gustafson chiziqlari ko'rsatiladi. Kutilgan natija: faqat matmul p≈1, ketma-ket qism qo'shilganda p≈0,97 → 1024 yadroda tezlanish atigi ~30×.
 
-Fayl: `s7_7_qadam_amdahl_va_gustafson_qonunlari_na.py` — ishga tushirish: `python3 s7_7_qadam_amdahl_va_gustafson_qonunlari_na.py`
+Fayl: `s7_7_qadam_amdahl_va_gustafson_qonunlari_na.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_amdahl_va_gustafson_qonunlari_na.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Dasturning p ulushi parallel, (1−p) ulushi ketma-ket bo'lsa, n protsessorda umumiy vaqt qanday o'zgaradi? Tezlanish formulasi nima?
+2. n → ∞ da Amdahl tezlanishining chegarasi nimaga teng? p=0,95 uchun bu qancha?
+3. Gustafson qonuni Amdahl'dan qaysi farazi bilan farq qiladi va nega uning tezlanishi n bilan chiziqli o'sadi?
+4. O'lchangan S(2) ma'lum bo'lsa, Amdahl formulasini p ga nisbatan qanday yechasiz? Nega natijani [0, 1] oralig'iga qisish kerak?
+5. Faqat matmul uchun p≈1, ketma-ket qism qo'shilganda p≈0,97 chiqsa, 1024 yadroli GPU'da tezlanish taxminan qancha bo'ladi? Nima uchun bu kutilmagan darajada kam?
+6. Grafikda tezlanishni log2 o'qlarda chizish nima uchun qulay va o'lchangan S(2) nuqtasi qaysi egri chiziq ustida yotishi kerak?
 
 Kutilgan natija: Amdahl jadvali (p=0,95: n=inf da 20), o'lchov jadvali S(2) ~1,9–2,0, p baholari, 2 panelli grafik.
 

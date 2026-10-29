@@ -28,48 +28,18 @@ X = pd.DataFrame({"tajriba": exp_years, "malaka_testi": skill, "talim": edu, "is
 A = pd.DataFrame({"jins": sex, "yosh": age})
 Xtr, Xte, ytr, yte, Atr, Ate = train_test_split(X, hist.astype(int), A, test_size=0.4, random_state=0, stratify=hist)
 
+# TODO 1: MetricFrame (tanlov ulushi, TPR, FPR) ni ikki sezgir atribut bo'yicha hisoblang;
+#         DI = eng kam / eng ko'p tanlov ulushi; aniqlik, DP ratio (jins, yosh), EO farqi va 4/5 qoidasi natijasini qaytaring
 def audit(name, pred):
-    mf = MetricFrame(metrics={"tanlov": selection_rate, "TPR": true_positive_rate, "FPR": false_positive_rate},
-                     y_true=yte, y_pred=pred, sensitive_features=Ate)
-    sr = mf.by_group["tanlov"]
-    di = sr.min() / sr.max()                               # disparate impact (eng kam / eng ko'p tanlov ulushi)
-    return mf, dict(usul=name, aniqlik=accuracy_score(yte, pred), DI_kesishgan=di,
-                    DP_ratio_jins=demographic_parity_ratio(yte, pred, sensitive_features=Ate["jins"]),
-                    DP_ratio_yosh=demographic_parity_ratio(yte, pred, sensitive_features=Ate["yosh"]),
-                    EO_diff=equalized_odds_difference(yte, pred, sensitive_features=Ate), qoida_4_5="o'tdi" if di >= 0.8 else "O'TMADI")
+    raise NotImplementedError("TODO 1: fairness audit")
 
-base = LogisticRegression(max_iter=2000).fit(Xtr, ytr)
+# TODO 2: bazaviy LogisticRegression ni o'qitib, kesishgan guruhlar jadvalini va DI ni chiqaring
+base = None
 mf, r0 = audit("Bazaviy (LR)", base.predict(Xte))
 print("=== Fairness audit: kesishgan guruhlar (jins x yosh), bazaviy model ===")
-print(mf.by_group.round(3).to_string())
-print(f"Eng past/eng yuqori tanlov ulushi = {r0['DI_kesishgan']:.2f}  (4/5 qoidasi: >= 0.80) -> {r0['qoida_4_5']}")
 
-# ---- Yumshatish 1 (oldindan ishlov): Kamiran-Calders qayta tortish — (guruh, yorliq) juftliklari muvozanatlanadi ----
-g = Atr["jins"] + "|" + Atr["yosh"]
-w = np.ones(len(ytr))
-for gg in g.unique():
-    for yy in (0, 1):
-        m = (g == gg).values & (ytr == yy)
-        if m.sum(): w[m] = (g == gg).mean() * (ytr == yy).mean() / m.mean()
-rw = LogisticRegression(max_iter=1000).fit(Xtr, ytr, sample_weight=w)
-_, r1 = audit("Qayta tortish (reweighing)", rw.predict(Xte))
-# ---- Yumshatish 2 (o'qitish ichida): ExponentiatedGradient + DemographicParity, kesishgan guruh bo'yicha ----
-eg = ExponentiatedGradient(LogisticRegression(max_iter=1000), DemographicParity(difference_bound=0.03), max_iter=40)
-eg.fit(Xtr, ytr, sensitive_features=g)
-_, r2 = audit("ExpGrad (DP<=0.03)", eg.predict(Xte))
-# ---- Taqqoslash uchun: vakil belgini olib tashlash ("unawareness") ----
-PROXY = ["ish_tanaffusi", "bitirgan_yil"]
-nb = LogisticRegression(max_iter=1000).fit(Xtr.drop(columns=PROXY), ytr)
-_, r3 = audit("Vakil belgilarsiz", nb.predict(Xte.drop(columns=PROXY)))
-tab = pd.DataFrame([r0, r3, r1, r2])
+# TODO 3: Kamiran-Calders qayta tortish: w(guruh, yorliq) = P(guruh) * P(yorliq) / P(guruh, yorliq)
+# TODO 4: ExponentiatedGradient + DemographicParity(difference_bound=0.03), kesishgan guruh bo'yicha
+# TODO 5: vakil belgilarni (ish_tanaffusi, bitirgan_yil) olib tashlab o'qitish ("unawareness")
 print("\n=== Yumshatish usullari taqqoslash ===")
-print(tab.round(3).to_string(index=False))
-print("\nEslatma: yorliqning o'zi tarafkash (tarixiy qarorlar), shuning uchun 'aniqlik' ham tarafkash yorliqqa nisbatan o'lchanmoqda.")
-
-fig, ax = plt.subplots(figsize=(7, 3.5))
-ax.scatter(tab.DI_kesishgan, tab.aniqlik, s=60)
-for _, r in tab.iterrows(): ax.annotate(r.usul, (r.DI_kesishgan, r.aniqlik), fontsize=7, xytext=(4, 4), textcoords="offset points")
-ax.axvline(0.8, ls="--", c="r"); ax.set_xlabel("disparate impact (kesishgan)"); ax.set_ylabel("aniqlik"); ax.set_title("Aniqlik va adolatlilik murozasi"); ax.grid(alpha=.3)
-plt.tight_layout()
-print("\nIzoh: real auditda sezgir atributlarni yig'ish va ishlatishning huquqiy asosi (GDPR 9-modda, EU AI Act 10(5)-modda)")
-print("hamda guruh kichikligi (statistik ishonchlilik, bootstrap oraliqlari) alohida tekshiriladi.")
+# TODO 6: to'rt variant natijalarini bitta jadvalda chiqaring

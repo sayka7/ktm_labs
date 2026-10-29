@@ -1,6 +1,7 @@
 # A5. Taqsimlangan sun'iy intellekt tizimlarini ishlab chiqish
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A5_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada talaba taqsimlangan o'qitish va parallel inferensning asosiy mexanizmlarini CPU sandbox'da bajaradi: torch.distributed (gloo backend) bilan 2 jarayonli DDP, kuchli/kuchsiz masshtablash o'lchovi, halqa all-reduce algoritmini qo'lda yozish, gradient to'plash ekvivalentligi, multiprocessing Pool bilan parallel inferens, Amdal/Gustafson qonunlari va GPU klasteri uchun aloqa/hisob kalkulyatori. Real labdan farqi: GPU va NCCL yo'q — 2 ta CPU yadro «2 ta GPU» rolini o'ynaydi, modellar kichik MLP, ma'lumot sintetik yoki sklearn digits; mantiq (process group, DistributedSampler, DDP o'rami, all-reduce) esa haqiqiy klasterdagi bilan bir xil.
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 torch.multiprocessing orqali 2 ta jarayon (rank 0 va 1) ishga tushiriladi, har biri jarayonlar guruhiga qo'shiladi, DistributedSampler ma'lumotni kesishmaydigan ikki qismga bo'ladi, DDP o'rami gradientlarni har qadamda all-reduce qiladi. Oxirida parametrlar barcha ranklarda bir xil ekani (max farq 0) va jami ko'rilgan namunalar soni tekshiriladi. Talaba `EPOCHS`, `BS`, LR masshtablash qoidasini (`0.05 * world`) va `set_epoch` chaqiruvini o'zgartirib ko'rishi mumkin.
 
-Fayl: `s1_1_qadam_ddp_gloo_backend_bilan_2_jarayon.py` — ishga tushirish: `python3 s1_1_qadam_ddp_gloo_backend_bilan_2_jarayon.py`
+Fayl: `s1_1_qadam_ddp_gloo_backend_bilan_2_jarayon.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_ddp_gloo_backend_bilan_2_jarayon.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Ikki jarayon bir-birini qanday topadi? Ular birinchi bo'lib qaysi ma'lumotlarni (manzil, port, rank, world_size) kelishib olishi kerak?
+2. Ikkala rank bir xil 4096 namunali to'plamni yaratadi. Ular bir xil namunalarda o'qimasligi uchun nima kerak? Har rank nechta namuna ko'rishi kerak?
+3. Agar sampler.set_epoch(ep) chaqirilmasa, epoxalar orasida aralashtirish qanday bo'ladi? Bu o'qitishga qanday ta'sir qiladi?
+4. Global paket world × BS bo'lganda o'rganish tezligini qanday o'zgartirish kerak? Nega DDP modelning boshlang'ich og'irliklarini o'zi tenglashtiradi?
+5. DDP haqiqatan sinxron ishlaganini qanday isbotlaysiz? Ikkala rankdagi parametrlarni bir-biriga solishtirish uchun qaysi kollektiv amallarni ishlatish mumkin?
+6. Natijani qanday tekshirasiz: har rank va jami nechta namuna ko'rishi, aniqlik va parametr farqi qancha bo'lishi kerak?
 
 Kutilgan natija: Ikkala rank o'z 4096 namunasini ko'radi, jami 8192; aniqlik ~0.95; ranklar orasidagi parametr farqi 0.00e+00 (DDP sinxron); o'tkazuvchanlik bir necha o'n ming namuna/s.
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 Bir xil MLP uchun to'rt konfiguratsiya o'lchanadi: 1 jarayon (1 yadro) — baza T(1); 2 jarayonli DDP kuchli rejimda (global paket o'zgarmaydi, har rankka yarmi); kuchsiz rejimda (har rankda to'liq paket, global 2 baravar); va taqqoslash uchun 1 jarayon 2 yadro bilan (intra-op parallellik). Tezlashish S(N) va samaradorlik E(N) jadvalda chiqadi. Talaba `HID`, `GB`, `STEPS` ni o'zgartirib, model kattalashganda samaradorlik qanday o'zgarishini ko'radi.
 
-Fayl: `s2_2_qadam_masshtablash_1_vs_2_jarayon_s_n_.py` — ishga tushirish: `python3 s2_2_qadam_masshtablash_1_vs_2_jarayon_s_n_.py`
+Fayl: `s2_2_qadam_masshtablash_1_vs_2_jarayon_s_n_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_masshtablash_1_vs_2_jarayon_s_n_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Kuchli va kuchsiz masshtablash farqi nimada? 2 jarayonda har rankka qancha paket beriladi, global paket qancha bo'ladi?
+2. Rank 0 o'lchagan vaqt bola jarayonda qoladi. Uni asosiy jarayonga qanday qaytarasiz?
+3. Worker ichida nima bo'lishi kerak: jarayon guruhi, model o'rami, o'lchov? Har jarayonga nechta oqim (thread) berasiz va nega?
+4. Kuchsiz rejimda vaqtlarni to'g'ridan-to'g'ri solishtirish nega noto'g'ri? Tezlashishni qanday kattalik orqali hisoblash adolatli?
+5. Nega '1 jarayon, 2 yadro' (intra-op) varianti ham o'lchanadi? U DDP bilan solishtirganda nimani ko'rsatadi?
+6. Natijalaringiz real ekanini qanday tekshirasiz: baza vaqti, kuchli rejimdagi S(2) va E(2) qancha atrofida bo'lishi kerak? HID kattalashsa E qanday o'zgaradi?
 
 Kutilgan natija: Baza ~4-5 s; DDP kuchli rejimda S(2)≈1.6-1.8 (E≈80-90%), kuchsiz rejimda E≈90%; intra-op 2 yadro ham ~1.9x. Qadam 15-25 s davom etadi.
 
@@ -43,7 +62,16 @@ Tajriba qilib ko'ring:
 
 N ta ishchining gradient vektorlari uchun halqa all-reduce (N-1 reduce-scatter + N-1 all-gather qadami) simulyatsiya qilinadi, natija oddiy yig'indi bilan solishtiriladi va har ishchi yuborgan baytlar `2(N-1)/N * S` formulasiga mos kelishi ko'rsatiladi. So'ng ResNet-50 gradientlari (102 MB) uchun NVLink, InfiniBand va 10 GbE tarmoqlarda aloqa vaqti hisoblanadi.
 
-Fayl: `s3_3_qadam_halqa_all_reduce_ni_numpyda_qold.py` — ishga tushirish: `python3 s3_3_qadam_halqa_all_reduce_ni_numpyda_qold.py`
+Fayl: `s3_3_qadam_halqa_all_reduce_ni_numpyda_qold.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_halqa_all_reduce_ni_numpyda_qold.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. N ishchida vektor nechta bo'lakka bo'linadi va reduce-scatter tugaganda har ishchida nima bo'lishi kerak?
+2. k-qadamda i-ishchi qaysi bo'lakni yuboradi va kimdan qabul qiladi? Indekslarni halqa bo'ylab qanday 'aylantirasiz'?
+3. All-gather bosqichida qabul qilingan bo'lak bilan nima qilinadi — qo'shiladimi yoki almashtiriladimi? Nega? Qaysi bo'lak birinchi bo'lib tayyor?
+4. Har ishchi jami nechta bayt yuboradi? Har qadamda L/N float32 yuborilsa va 2(N-1) qadam bo'lsa, formula qanday chiqadi?
+5. ResNet-50 gradientlari 102 MB. 8 GPU, 10 Gbit/s Ethernet'da bitta all-reduce taxminan qancha vaqt oladi? NVLink'da-chi?
+6. Algoritmingiz to'g'riligini qanday tekshirasiz? Natija qanday chiqishi kerak va qanday aniqlik (atol) bilan solishtirasiz?
 
 Kutilgan natija: N=2,4,8 uchun «natija to'g'ri=True» va yuborilgan baytlar formulaga aynan teng; 10 GbE da 8 GPU uchun ~143 ms, NVLink'da 0.3 ms.
 
@@ -57,7 +85,15 @@ Tajriba qilib ko'ring:
 
 Bir xil 128 namunali global paket uchun uch usul taqqoslanadi: bitta katta paket; 4 ta mikro-paketda gradient to'plash (yo'qotish 1/K ga ko'paytiriladi); 2 «ishchi»da 64 tadan hisoblab gradientlarni o'rtachalash (DDP all-reduce'ning qo'lda nusxasi). Farqlar 1e-7 dan kichik chiqishi, 1/K ga bo'lmaslik esa gradientni K baravar kattalashtirishi ko'rsatiladi.
 
-Fayl: `s4_4_qadam_gradient_toplash_va_malumotlar_p.py` — ishga tushirish: `python3 s4_4_qadam_gradient_toplash_va_malumotlar_p.py`
+Fayl: `s4_4_qadam_gradient_toplash_va_malumotlar_p.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_gradient_toplash_va_malumotlar_p.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. CrossEntropyLoss standart holatda 'mean' qaytaradi. 128 namuna gradienti va 32 namunali to'rtta bo'lak gradientlari orasida qanday matematik bog'lanish bor?
+2. PyTorch'da ketma-ket bir necha marta backward() chaqirilsa, .grad bilan nima bo'ladi? To'plash uchun nimani chaqirmaslik kerak?
+3. Ikki 'ishchi' bir xil gradient yo'nalishida ishlashi uchun boshlang'ich og'irliklari qanday bo'lishi kerak? DDP buni qanday ta'minlaydi?
+4. DDP all-reduce ning SUM natijasini world_size ga bo'lish nimaga teng? Ikkita yassi gradient vektoridan o'rtachani qanday olasiz?
+5. Natija to'g'riligini qanday baholaysiz: max|gA−gB| va max|gA−gC| qancha bo'lishi, xato variantda norma nisbati nechaga teng bo'lishi kerak va nega?
 
 Kutilgan natija: max|gA-gB| va max|gA-gC| ~1e-8; xato variantda farq ~0.3 va norma nisbati 4.00.
 
@@ -71,7 +107,16 @@ Tajriba qilib ko'ring:
 
 Digits ustida o'qitilgan MLP og'irliklari NumPy'ga eksport qilinadi, ~360 ming so'rov 2048 talik bo'laklarga bo'linib multiprocessing Pool'ga tarqatiladi (scatter), natijalar tartib raqami bo'yicha yig'iladi (gather). 1 va 2 ishchi uchun o'tkazuvchanlik, S(N), E(N) va bo'lak kechikishining p50/p99 qiymatlari jadvalda chiqadi.
 
-Fayl: `s5_5_qadam_parallel_inferens_sharding_ishch.py` — ishga tushirish: `python3 s5_5_qadam_parallel_inferens_sharding_ishch.py`
+Fayl: `s5_5_qadam_parallel_inferens_sharding_ishch.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_parallel_inferens_sharding_ishch.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Inferensda o'qitishdan farqli qanday sinxronizatsiya yo'q? Shuning uchun ishni ishchilarga qanday taqsimlash mumkin?
+2. Ikki qatlamli MLP ning oldinga o'tishini NumPy'da qanday yozasiz? Og'irliklar nega .T bilan saqlangan?
+3. Model og'irliklarini har bo'lak bilan birga yubormaslik uchun ularni ishchilarga qanday bir marta yetkazasiz?
+4. pool.map natijalari kelgan tartib asl tartibga mos kelishiga ishonsa bo'ladimi? Bo'lakka tartib raqami qo'shish nega foydali?
+5. O'tkazuvchanlik, S(N) va E(N) qanday hisoblanadi? Isitish (warm-up) chaqiruvini nega o'lchovdan tashqarida qilish kerak?
+6. Natijani qanday tekshirasiz: 1 va 2 ishchida vaqt, S(2) va aniqlik qancha bo'lishi kerak? Aniqlik ishchilar soniga bog'liq bo'lishi mumkinmi?
 
 Kutilgan natija: 1 ishchi ~0.5-0.6 s, 2 ishchi ~0.3 s; S(2)≈1.7-1.9, E≈85-95%; aniqlik ikkala holatda bir xil (0.993).
 
@@ -85,7 +130,15 @@ Tajriba qilib ko'ring:
 
 Parallel ulush p=0.90/0.95/0.99 uchun Amdal (kuchli masshtablash) va Gustafson (kuchsiz) tezlashish egri chiziqlari N=1..256 oralig'ida hisoblanadi va log-log grafikda chiziladi; har N uchun E(N) jadvali va N→∞ chegarasi chiqadi. Talaba o'z o'lchovlaridan (2-qadam) p ni baholab, grafikka qo'shishi mumkin.
 
-Fayl: `s6_6_qadam_amdal_va_gustafson_qonunlari_gra.py` — ishga tushirish: `python3 s6_6_qadam_amdal_va_gustafson_qonunlari_gra.py`
+Fayl: `s6_6_qadam_amdal_va_gustafson_qonunlari_gra.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_amdal_va_gustafson_qonunlari_gra.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Dasturning p qismi parallel, (1−p) qismi ketma-ket bo'lsa, N ishchida bajarilish vaqti T(1) ga nisbatan qancha bo'ladi?
+2. N cheksizlikka intilganda Amdal tezlashishi nimaga intiladi? p = 0.90 bo'lsa, 1000 GPU ham necha martadan ortiq tezlashtira olmaydi?
+3. Gustafson ish hajmi N bilan o'sadi deb faraz qiladi. N ishchida bajarilgan ishni bitta ishchi qancha vaqtda qilardi?
+4. Funksiyangiz bitta son uchun ham, NumPy massivi N uchun ham ishlashi kerak. Grafik chizish uchun buni qanday ta'minlaysiz?
+5. Natijangizni qanday tekshirasiz: p=0.90 va p=0.99 da S(256) qancha bo'lishi kerak? Gustafson egri chizig'i ideal chiziqqa nisbatan qanday ko'rinadi?
 
 Kutilgan natija: Jadval: p=0.90 da S(256)≈9.7 (chegara 10x), p=0.99 da 72; Gustafson deyarli chiziqli. Ikki panelli grafik.
 
@@ -98,7 +151,16 @@ Tajriba qilib ko'ring:
 
 Analitik model: T_step = T_comp + (1-overlap)·T_comm, bunda T_comp FLOPs/(cho'qqi·MFU), T_comm — halqa all-reduce hajmi/tarmoq o'tkazuvchanligi. ResNet-18/50, ViT-B, GPT-2 1.5B uchun 4 xil tarmoqda r = T_comm/T_comp va E(N) hisoblanadi, gradient to'plashning ta'siri ko'rsatiladi, ResNet-50 uchun E(N) grafigi chiziladi. Talaba o'z klasteri parametrlarini (PEAK, MFU, BATCH, BYTES_PER_GRAD) kiritadi.
 
-Fayl: `s7_7_qadam_aloqa_hisob_nisbati_kalkulyatori.py` — ishga tushirish: `python3 s7_7_qadam_aloqa_hisob_nisbati_kalkulyatori.py`
+Fayl: `s7_7_qadam_aloqa_hisob_nisbati_kalkulyatori.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_aloqa_hisob_nisbati_kalkulyatori.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bir o'qitish qadami vaqti qaysi ikki qismdan iborat va overlap (hisob bilan aloqani ustma-ust bajarish) ularni qanday birlashtiradi?
+2. Bir namunaning forward FLOPs'i ma'lum. Backward bilan birga taxminan necha baravar ko'p? GPU'ning amaldagi tezligi cho'qqidan qanday farq qiladi?
+3. Halqa all-reduce'da har GPU qancha bayt yuboradi (3-qadamni eslang)? BF16 gradient bilan parametrlar soni baytga qanday aylanadi?
+4. Gradient to'plash (accum) qaysi qismni o'zgartiradi — hisobnimi yoki aloqanimi? Shu sababli r = T_comm/T_comp qanday o'zgaradi?
+5. Nega katta model (ViT-B, GPT-2) kichigidan (ResNet-18) yaxshiroq masshtablanadi? Parametr va FLOPs nisbatiga qarab tushuntiring.
+6. Hisobingizni qanday tekshirasiz: NVLink va 10 GbE da ResNet-50 uchun E qancha bo'lishi, accum=8 nimani berishi kerak?
 
 Kutilgan natija: NVLink'da E≈99%, 10 GbE da ResNet-50 uchun E≈26% (accum=8 bilan 74%); katta model (ViT-B, GPT-2) yaxshiroq masshtablanadi.
 

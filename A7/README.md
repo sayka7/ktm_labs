@@ -1,6 +1,7 @@
 # A7. Yakuniy kompleks loyihani shakllantirish: ma'lumot -> model -> API -> monitoring -> adolatlilik
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A7_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz tibbiy tasvir triaji loyihasining to'liq ML mahsulot ketma-ketligini mini-loyiha sifatida boshidan oxirigacha o'tasiz: sxema tekshiruvi va bemor bo'yicha sizishsiz bo'lish, model reestri va promote darvozasi, ONNX eksport, FastAPI xizmati metrikalari va audit jurnali, PSI/KS drift ogohlantirishi, fairlearn bilan kesimlar hisoboti va yakunda avtomatik tuziladigan loyiha pasporti. Real labdan farqi: sandbox'da rentgen tasvirlari, GPU va Docker yo'q — har tasvir o'rniga undan olingan 6 ta sintetik belgi, DenseNet o'rniga kichik MLP, uvicorn o'rniga TestClient ishlatiladi; lekin muhandislik qarorlari (sizish, chegara, darvoza, drift qoidasi, ko'lam cheklash) aynan haqiqiy loyihadagidek.
 
 ## Muhit
@@ -15,7 +16,17 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Sintetik «bemor» manifesti yaratiladi (har bemorda 1–3 tasvir, 6 ta tasvir belgisi, yosh, jins, topilma). Pandera uslubidagi sxema tekshiruvi toza ma'lumotda o'tadi, ataylab buzilgan partiyada esa har xatoni aniq nomlaydi. So'ng `GroupShuffleSplit` bilan BEMOR bo'yicha bo'linadi va sizish `assert` bilan tekshiriladi; taqqoslash uchun tasodifiy (tasvir bo'yicha) bo'lishda nechta bemor sizishi hisoblanadi. O'zgartirib ko'ring: `test_size`, buzilgan qiymatlar, `n_bemor`.
 
-Fayl: `s1_1_qadam_malumot_sxemasi_validatsiyasi_va.py` — ishga tushirish: `python3 s1_1_qadam_malumot_sxemasi_validatsiyasi_va.py`
+Fayl: `s1_1_qadam_malumot_sxemasi_validatsiyasi_va.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_malumot_sxemasi_validatsiyasi_va.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bitta bemorning uchta tasviridan biri train'ga, ikkinchisi testga tushsa, test AUC nimani o'lchay boshlaydi — umumlashtirishnimi yoki bemorni «tanib olish»nimi?
+2. Sxema tekshiruvchisi har bir ustun uchun qaysi savollarga javob berishi kerak, va nega xato matnida ustun nomi va buzilgan qiymatlar soni bo'lishi muhim?
+3. Buzilgan partiyada aynan 6 ta xato satri chiqishi uchun qaysi ustunlarni qanday buzish kerak? 'm' (kichik harf) qaysi qoidaga tushadi, 412 va -1 yosh-chi?
+4. GroupShuffleSplit oddiy train_test_split'dan qaysi argumenti bilan farq qiladi va u qaytargan indekslarni df'ga qanday yozasiz?
+5. Sizish yo'qligini qanday isbotlaysiz: qaysi ikki to'plam kesishmasi bo'sh bo'lishi shart?
+6. Tasvir bo'yicha tasodifiy 70/30 bo'lishda bemorlarning taxminan qancha qismi siziydi deb kutasiz (expect ~35%)? Nega 1 tasvirli bemor hech qachon sizmaydi?
+7. Vakillik jadvalida 0-18 yosh guruhi har split'da yetarli bormi? Bu keyingi adolatlilik tahlili uchun nima uchun muhim?
 
 Kutilgan natija: Sxema toza ma'lumotda O'TDI, buzilgan partiyada 6 ta xato satri; bemor bo'yicha bo'lishda sizish 0, tasodifiy bo'lishda ~35% bemor sizadi; split × sex va yosh guruhi × split jadvallari.
 
@@ -29,7 +40,16 @@ Tajriba qilib ko'ring:
 
 Uchta eksperiment (logreg, 2 belgili zaif baseline, HistGradientBoosting) o'qitiladi, chegara validatsiyada sezgirlik >= 0.90 bo'ladigan qilib tanlanadi. Har model /tmp/triage/registry ichiga pickle + SHA-256 xesh bilan JSON reestrga «staging» sifatida yoziladi. `promote` darvozasi SLO (AUC >= 0.75, recall >= 0.90, jins bo'yicha TPR farqi <= 0.05) tekshiradi va joriy production'dan yomon bo'lsa almashtirmaydi. O'zgartirib ko'ring: SLO qiymatlari, yangi eksperiment, xeshni buzish.
 
-Fayl: `s2_2_qadam_model_oqitish_eksperiment_jurnal.py` — ishga tushirish: `python3 s2_2_qadam_model_oqitish_eksperiment_jurnal.py`
+Fayl: `s2_2_qadam_model_oqitish_eksperiment_jurnal.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_model_oqitish_eksperiment_jurnal.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Triaj tizimida qaysi xato qimmatroq: kasal bemorni «ROUTINE» deb o'tkazib yuborishmi yoki sog'lomni «HIGH» qilishmi? Bu sizning chegara tanlash qoidangizga qanday ta'sir qiladi?
+2. Chegarani nega testda emas, validatsiyada tanlash kerak? Agar testda tanlasangiz test metrikasi nimani ko'rsatmay qoladi?
+3. Jins bo'yicha TPR farqini hisoblash uchun y va pred'ni qanday ikki qismga ajratasiz va qaysi metrikani har qismda olasiz?
+4. Reestrga model faylining o'zi emas, uning SHA-256 xeshi ham nega yoziladi? Kimdir .pkl faylni almashtirsa, buni qanday aniqlaysiz?
+5. promote darvozasi qaysi tartibda qaror qilishi kerak: avval SLO, keyin joriy production bilan solishtirishmi yoki aksincha? v3 (hgb) nega production bo'lmasligi kutilmoqda?
+6. Kutilgan natija: v1 production, v2 rejected (auc < 0.75), v3 staging. Sizda v2 boshqa sabab bilan rad etilsa, bu nimani anglatadi?
 
 Kutilgan natija: Jadval: v1 logreg -> production, v2 -> rejected (auc < 0.75), v3 hgb -> staging (v1 yaxshiroq); reestr holati va butunlik tekshiruvi MOS.
 
@@ -43,7 +63,16 @@ Tajriba qilib ko'ring:
 
 Normalizatsiyasi grafga «tikilgan» kichik MLP 30 epoxa CPU'da o'qitiladi, dinamik batch bilan ONNX'ga eksport qilinadi, `onnx.checker` va PyTorch–ONNX parity (maks. farq < 1e-4) tekshiriladi, ikkala artefakt xeshi chiqariladi. Keyin PyTorch eager va ONNX Runtime kechikishi batch 1 va 64 uchun p50/p99 bilan taqqoslanadi. O'zgartirib ko'ring: qatlam o'lchamlari, `opset_version`, batch hajmi.
 
-Fayl: `s3_3_qadam_pytorch_mlp_onnx_eksport_va_onnx.py` — ishga tushirish: `python3 s3_3_qadam_pytorch_mlp_onnx_eksport_va_onnx.py`
+Fayl: `s3_3_qadam_pytorch_mlp_onnx_eksport_va_onnx.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_pytorch_mlp_onnx_eksport_va_onnx.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Normalizatsiya (mu, sd) model ichida emas, serverda alohida qilinsa, ONNX artefaktini boshqa jamoaga berganda qanday xavf paydo bo'ladi?
+2. Model chiqishi nega logit (sigmoid'siz) va loss nega BCEWithLogitsLoss? Sinflar nomutanosib bo'lsa pos_weight'ni qanday tanlaysiz?
+3. Eksportda dummy kirish shakli (1, 6). Agar dynamic_axes bermasangiz, server 64 tali batch yuborganda nima bo'ladi?
+4. Parity tekshiruvi uchun qaysi ikki massivni solishtirasiz va nega chegara 1e-4 — nega aynan 0 emas?
+5. Kechikishni o'lchashda birinchi chaqiruvlarni nega tashlab yuborish kerak va nega o'rtacha emas, p50/p99 olinadi?
+6. Kutilgan natija: ONNX Runtime batch 1 da ~10 µs, PyTorch eager ~40 µs. Batch 64 da farq kamayadimi yoki ortadimi va nega?
 
 Kutilgan natija: Test AUC ~0.84; parity farqi ~1e-7 (MOS); ONNX Runtime batch 1 p50 ~10 µs, PyTorch ~40 µs; triage.onnx ~4 KB.
 
@@ -57,7 +86,17 @@ Tajriba qilib ko'ring:
 
 Xizmat kodi haqiqiy loyihadagidek yoziladi: API kalit, pydantic kontrakt, kirish nazorati, ONNX Runtime inferens, Prometheus matn formatidagi Counter/Histogram (o'z amalga oshirishimiz), audit jurnali (kirishning xeshi, jins/yosh sarlavhadan). TestClient bilan 300 so'rov yuboriladi — to'liq va server ichidagi kechikish p50/p99 taqqoslanadi, /metrics chiqishi va jurnal o'qiladi. O'zgartirib ko'ring: chegara, gistogramma chelaklari, noto'g'ri so'rov turlari.
 
-Fayl: `s4_4_qadam_fastapi_xizmati_predict_healthz_.py` — ishga tushirish: `python3 s4_4_qadam_fastapi_xizmati_predict_healthz_.py`
+Fayl: `s4_4_qadam_fastapi_xizmati_predict_healthz_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_fastapi_xizmati_predict_healthz_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Xizmat qaysi uch holatda bashorat qaytarmasligi kerak (API kalit, kirish shakli, qiymat diapazoni) va har biriga qaysi HTTP kodi mos?
+2. Pydantic'da ro'yxat uzunligini aniq 6 ga qanday cheklaysiz, va bu tekshiruvni o'zingiz qo'lda yozishdan nimasi yaxshi?
+3. Prometheus gistogrammasidagi chelaklar (bucket) kumulyativmi? x=0.0003 kuzatilsa, qaysi le chelaklar oshishi kerak?
+4. Counter.expose() chiqishi 'triage_requests_total{status="ok"} 300' ko'rinishida bo'lishi uchun yorliqlarni qanday saqlab, qanday formatlaysiz?
+5. Audit jurnaliga nega bemor belgilari emas, ularning xeshi yoziladi? Jins/yosh sarlavhadan olinadi — bu keyin qaysi tahlilga kerak bo'ladi?
+6. Kutilgan natija: TestClient bilan p50 ~4 ms, server ichida ~0.1 ms. Bu 40 baravar farq nimadan iborat va qaysi biri foydalanuvchi SLO'siga kiradi?
+7. Yuk sinovidan oldin nega jurnal fayli va metrikalarni tozalash kerak? Aks holda check satridagi 300 soni nimaga aylanadi?
 
 Kutilgan natija: /healthz ok; 401/400/422 holatlar; 300 so'rov p50 ~4 ms (TestClient) vs ~0.1 ms (server ichida); /metrics da counter va 2 histogram; jurnalda 300 yozuv.
 
@@ -71,7 +110,16 @@ Tajriba qilib ko'ring:
 
 Validatsiya to'plami mos yozuv bo'ladi. 8 kunlik ishlab chiqarish oqimi simulyatsiya qilinadi: 4-kundan «yangi apparat» (opaklik kontrasti −30% va siljish, yorqinlik oshishi) kuchayib boradi. Har kun uchun belgilar va model ballari PSI, KS-test p-qiymati, HIGH ulushi hisoblanib, darajali qoida (OK/WARN/ALERT) ishlaydi; sezgirlik yorliq bilan qayta hisoblanib, driftning haqiqiy zarari ko'rsatiladi. O'zgartirib ko'ring: siljish kuchi, qoidalar chegarasi, chelaklar soni.
 
-Fayl: `s5_5_qadam_monitoring_psi_ks_bilan_drift_an.py` — ishga tushirish: `python3 s5_5_qadam_monitoring_psi_ks_bilan_drift_an.py`
+Fayl: `s5_5_qadam_monitoring_psi_ks_bilan_drift_an.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_monitoring_psi_ks_bilan_drift_an.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Ishlab chiqarishda haqiqiy yorliq (finding) haftalar kechikib keladi. Unda yorliqsiz, faqat kirish va ball taqsimotlariga qarab nimani kuzatish mumkin?
+2. PSI formulasida chelaklar chegaralari nega joriy oqimdan emas, mos yozuv kvantillaridan olinadi? Chetki chelaklarni nega ±inf qilish kerak?
+3. PSI va KS-test bir xil narsani o'lchaydimi? Nega n=250 da KS p-qiymati juda kichik (~1e-14) bo'lishi mumkin, PSI esa 0.23 atrofida?
+4. Holatni OK/WARN/ALERT ga ajratishda qoidalarni qanday tartibda tekshirasiz, va KS yoki HIGH ulushi signali holatni qanday «bir pog'ona» oshirishi kerak?
+5. Qaysi belgilar siljishini kutasiz (yangi_apparat funksiyasiga qarang) va qaysi kundan ALERT boshlanishi kerak?
+6. Sezgirlik 0.86 dan 0.68 ga tushsa, bu SLO (0.90) bilan qanday bog'liq? PSI ogohlantirishi yorliqdan qancha oldin kelgan bo'lardi?
 
 Kutilgan natija: 1–4 kun OK, 5-kundan ALERT (intensity/opacity PSI > 0.3), 8-kunda ball PSI ~0.23, KS p ~1e-14, sezgirlik 0.86 -> 0.68; kun × belgi PSI jadvali va grafik.
 
@@ -85,7 +133,16 @@ Tajriba qilib ko'ring:
 
 Test to'plamida jins va yosh guruhlari bo'yicha n, TPR, FPR, tanlov ulushi va AUC `MetricFrame` bilan chiqariladi, TPR farqi SLO (<= 0.05) bilan solishtiriladi, bootstrap bilan 95% ishonch oralig'i hisoblanadi. Ikki yumshatish yo'li taqqoslanadi: (A) `ThresholdOptimizer` guruhga xos chegaralar, (B) ko'lamni 19+ bilan cheklash va chegarani qayta tanlash. O'zgartirib ko'ring: cheklov turi, chegara, bolalar shovqin koeffitsienti generator ichida.
 
-Fayl: `s6_6_qadam_adolatlilik_fairlearn_metricfram.py` — ishga tushirish: `python3 s6_6_qadam_adolatlilik_fairlearn_metricfram.py`
+Fayl: `s6_6_qadam_adolatlilik_fairlearn_metricfram.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_adolatlilik_fairlearn_metricfram.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Umumiy AUC yaxshi bo'lsa ham model qaysidir guruhga zarar berishi mumkinmi? Triajda qaysi guruh metrikasi eng muhim — TPR, FPR yoki tanlov ulushi?
+2. MetricFrame'ga qaysi uchta narsani berasiz va TPR farqini (max-min) qaysi metod bilan olasiz?
+3. 0-18 guruhida musbat namunalar soni kam. TPR ~0.70 nuqtaviy bahosiga qanchalik ishonish mumkin va buni qanday miqdorlashtirasiz?
+4. ThresholdOptimizer allaqachon o'qitilgan modelni qayta o'qitmasligi uchun qaysi parametr kerak, va cheklov sifatida nima beriladi?
+5. B yo'lida 19+ bemorlarga cheklagach chegarani nega qayta tanlash kerak? Qaysi yo'nalishda qidirasiz — eng katta yoki eng kichik chegara?
+6. Kutilgan natija: A farqni ~0.02 ga tushiradi, lekin sezgirlik 0.77; B farq ~0.03, sezgirlik 0.90. Qaysi biri klinik jihatdan halolroq va nega?
 
 Kutilgan natija: Jins bo'yicha farq ~0.01 (OK), yosh bo'yicha ~0.18 (BUZILDI, 0-18 TPR ~0.70, keng ishonch oralig'i); A: farq ~0.02, lekin sezgirlik 0.77; B: farq ~0.03, sezgirlik 0.90.
 
@@ -99,7 +156,17 @@ Tajriba qilib ko'ring:
 
 Butun ketma-ketlik qisqa shaklda qayta bajariladi va barcha o'lchovlar (sizish, AUC, sezgirlik, chegara, parity, p50/p99, PSI, TPR farqlari, ko'lamdan tashqari guruh) bitta `O` lug'atiga yig'iladi. Shundan Markdown pasport + model kartasi (Mitchell va boshq. formati) va 10 mezonli rubrika jadvali avtomatik tuziladi: avtomatik tekshiriladigan mezonlar SLO bo'yicha to'liq/yarim ball oladi, qolganlari «qo'lda» belgilanadi. O'zgartirib ko'ring: SLO qiymatlari, model o'lchami, drift kuchi — hujjat o'zi qayta yoziladi.
 
-Fayl: `s7_7_qadam_loyiha_pasporti_va_model_kartasi.py` — ishga tushirish: `python3 s7_7_qadam_loyiha_pasporti_va_model_kartasi.py`
+Fayl: `s7_7_qadam_loyiha_pasporti_va_model_kartasi.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_loyiha_pasporti_va_model_kartasi.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Model kartasidagi raqam qo'lda yozilsa va keyin model qayta o'qitilsa nima bo'ladi? Hujjatni «koddan avtomatik» qilishning himoyadagi afzalligi nimada?
+2. Oldingi 6 qadamdan qaysi o'lchovlar pasportga kirishi kerak? Ularni ma'lumot, model, unumdorlik, monitoring, adolatlilik bo'limlariga qanday ajratasiz?
+3. 6-qadam qarori (ko'lam 19+) bu yerda qayerda qo'llanishi kerak — o'qitishdami, baholashdami yoki ikkalasidami? 0–18 guruhini butunlay unutish to'g'rimi?
+4. Drift ogohlantirishi «ishlaydi» deb qachon aytish mumkin — faqat drift oqimida PSI yuqori bo'lsami yoki oddiy oqimda past bo'lishi ham shartmi?
+5. Rubrikada avtomatik tekshirib bo'lmaydigan mezonlar (Docker, Git, himoya) qanday ball olishi kerak va nega ularni to'liq ball bilan belgilash noto'g'ri?
+6. Markdown jadval satrini ro'yxatdan qanday hosil qilasiz va check satri '**Jami:' chiqishi uchun oxirgi qatorda nima bo'lishi kerak?
+7. Kutilgan natija: test AUC ~0.85, sezgirlik ~0.91, jami ~84/100. SLO qiymatini (masalan recall 0.95) o'zgartirsangiz hujjatning qaysi qismlari o'zi o'zgaradi?
 
 Kutilgan natija: Markdown hujjat stdout'da va /tmp/triage/docs/model_card.md da; test AUC ~0.85, sezgirlik ~0.91, TPR farqlari SLO ichida, drift ALERT ishlaydi; jami ~84/100 (qo'lda mezonlar yarim ball).
 

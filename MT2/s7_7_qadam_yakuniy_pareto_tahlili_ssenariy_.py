@@ -66,68 +66,23 @@ quantize_dynamic("prep.onnx", "dyn.onnx", weight_type=QuantType.QInt8)
 quantize_static("prep.onnx", "int8.onnx", Kalib(), quant_format=QuantFormat.QOperator, per_channel=True,
                 activation_type=QuantType.QUInt8, weight_type=QuantType.QInt8, calibrate_method=CalibrationMethod.MinMax)
 
-P_BOSH, P_MAX, YADRO = 6.0, 28.0, 2                                # 6-qadamdagi TAXMINIY quvvat modeli
+# TODO 1: olchov(run, batch) — batch 1 da p99 (ms), batch da throughput (inf/s) va 6-qadam modeli bo'yicha uJ/inf ni qaytaring
 def olchov(run, batch):
-    xb1, xbb = Xte[:1], Xte[:batch]
-    for _ in range(30): run(xb1)
-    t = []
-    for _ in range(400):
-        a = time.perf_counter(); run(xb1); t.append(time.perf_counter() - a)
-    c0, w0 = time.process_time(), time.perf_counter(); k = 200
-    for _ in range(k): run(xbb)
-    cpu, wall = time.process_time() - c0, time.perf_counter() - w0
-    band = min(cpu / (wall * YADRO), 1.0)
-    return np.percentile(np.array(t) * 1e3, 99), k * batch / wall, (P_BOSH + (P_MAX - P_BOSH) * band) * wall / (k * batch) * 1e6
-rows = []
-with torch.inference_mode():
-    acc = (model(torch.tensor(Xte)).argmax(1).numpy() == yte).mean()
-    p99, thr, uj = olchov(lambda x: model(torch.from_numpy(x)), 32)
-torch.save(model.state_dict(), "m.pt")
-rows.append(("PyTorch eager FP32", "2 oqim", acc, p99, thr, uj, os.path.getsize("m.pt") / 1024))
-for nom, f, intra in [("ORT FP32", "fp32.onnx", 1), ("ORT FP32", "fp32.onnx", 2), ("ORT INT8 dinamik", "dyn.onnx", 1),
-                      ("ORT INT8 statik", "int8.onnx", 1), ("ORT INT8 statik", "int8.onnx", 2)]:
-    so = ort.SessionOptions(); so.intra_op_num_threads = intra
-    s = ort.InferenceSession(f, so, providers=["CPUExecutionProvider"])
-    acc = (s.run(None, {"x": Xte})[0].argmax(1) == yte).mean()
-    p99, thr, uj = olchov(lambda x: s.run(None, {"x": x}), 32)
-    rows.append((nom, f"{intra} oqim", acc, p99, thr, uj, os.path.getsize(f) / 1024))
-T = pd.DataFrame(rows, columns=["Konfiguratsiya", "Oqim", "Aniqlik", "p99 b1, ms", "inf/s b32", "uJ/inf b32", "Hajm, KB"])
+    raise NotImplementedError("TODO 1: yakuniy o'lchov")
+
+# TODO 2: 6 konfiguratsiyani (PyTorch eager, ORT FP32 1/2 oqim, INT8 dinamik, INT8 statik 1/2 oqim) o'lchab
+#         T jadvalini tuzing: Aniqlik, p99 b1, inf/s b32, uJ/inf b32, Hajm KB
+T = None
+raise NotImplementedError("TODO 2: yakuniy jadval")
 print("=== Yakuniy jadval ===")
-print(T.round(4).to_string(index=False))
 
-# --- Pareto: kechikish (min), energiya (min), aniqlik (max), throughput (max) — hech kim uni barcha mezonda ustun bo'lmasa, optimal
+# TODO 3: pareto(df) — p99 va energiya (min), aniqlik va throughput (max) bo'yicha dominatsiya qilinmaganlar ro'yxati
 def pareto(df):
-    v = np.c_[df["p99 b1, ms"], df["uJ/inf b32"], -df["Aniqlik"], -df["inf/s b32"]]
-    return [not any((v[j] <= v[i]).all() and (v[j] < v[i]).any() for j in range(len(v)) if j != i) for i in range(len(v))]
-T["Pareto"] = pareto(T)
+    raise NotImplementedError("TODO 3: Pareto chegarasi")
 print("\n=== Pareto tahlili (p99, energiya, aniqlik, throughput) ===")
-print(T[["Konfiguratsiya", "Oqim", "Pareto"]].to_string(index=False))
-print("Pareto-optimal:", "; ".join(T[T.Pareto].Konfiguratsiya + " (" + T[T.Pareto].Oqim + ")"))
 
-# --- Ssenariylar: cheklovlar + maqsad funksiyasi
-acc0 = T.Aniqlik.iloc[1]
-SSEN = [("Bilakuzuk (yiqilish signali)", "hajm <= 20 KB, aniqlik >= FP32-1 p.p.", lambda d: d[(d["Hajm, KB"] <= 20) & (d.Aniqlik >= acc0 - 0.01)], "uJ/inf b32", True),
-        ("Kasalxona serveri (1000 bemor)", "aniqlik >= FP32-0,5 p.p.", lambda d: d[d.Aniqlik >= acc0 - 0.005], "inf/s b32", False),
-        ("Real vaqt signali", "p99 eng kichik", lambda d: d, "p99 b1, ms", True)]
+# TODO 4: 3 ssenariy (bilakuzuk, kasalxona serveri, real vaqt signali) uchun cheklov + maqsad funksiyasi bo'yicha tanlang
 print("\n=== Ssenariy bo'yicha tanlov ===")
-for nom, shart, filt, mezon, kichik in SSEN:
-    d = filt(T)
-    if len(d) == 0: print(f"{nom}: shartni ({shart}) hech qaysi konfiguratsiya qanoatlantirmaydi"); continue
-    tan = d.loc[d[mezon].idxmin() if kichik else d[mezon].idxmax()]
-    print(f"{nom}: [{shart}] -> {tan.Konfiguratsiya} ({tan.Oqim}), {mezon} = {tan[mezon]:.3f}")
 
+# TODO 5: GPU/NPU stendi uchun trtexec, ovc/benchmark_app va quvvat o'lchash buyruqlarini sanab chiqing
 print("\n=== TensorRT / OpenVINO yo'l xaritasi (GPU/NPU li stendda bajariladi) ===")
-for q in ["TensorRT: trtexec --onnx=fp32.onnx --fp16 --saveEngine=har_fp16.plan  (INT8 uchun --int8 + kalibrlash keshi)",
-          "TensorRT: trtexec --loadEngine=har_fp16.plan --shapes=x:32x3x128 --dumpProfile  -> latency/throughput, qatlam profili",
-          "OpenVINO: ovc fp32.onnx  -> IR (.xml/.bin); benchmark_app -m fp32.xml -d CPU -hint latency | throughput",
-          "OpenVINO INT8: NNCF post-training quantization (kalibrlash to'plami ~300 namuna)",
-          "Quvvat: nvidia-smi --query-gpu=power.draw --format=csv -lms 100  |  Jetson: tegrastats  |  CPU: RAPL (perf stat -e power/energy-pkg/)"]:
-    print(" -", q)
-print("Eslatma: bu labdagi energiya — model asosidagi baho; real tizimda yuqoridagi asboblar yoki tashqi quvvat o'lchagich bilan tekshiring.")
-
-plt.figure(figsize=(6.5, 4))
-for i, r in T.iterrows():
-    plt.scatter(r["p99 b1, ms"], r["uJ/inf b32"], s=4000 * (r.Aniqlik - 0.85), c="tab:red" if r.Pareto else "tab:gray", alpha=0.7)
-    plt.annotate(f"{r.Konfiguratsiya} ({r.Oqim})", (r["p99 b1, ms"], r["uJ/inf b32"]), fontsize=7)
-plt.xscale("log"); plt.xlabel("p99 kechikish, ms (batch 1)"); plt.ylabel("uJ/inferens (taxminiy)")
-plt.title("Pareto: qizil — optimal, doira o'lchami — aniqlik"); plt.tight_layout()

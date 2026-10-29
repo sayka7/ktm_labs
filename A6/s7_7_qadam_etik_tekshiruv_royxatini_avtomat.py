@@ -6,7 +6,6 @@ Kutilgan natija: 20 qatorli jadval, umumiy ball ~60/100, bajarilmagan bandlar ro
 """
 # 7-qadam. Etik tekshiruv ro'yxatini (20 band) avtomatik baholovchi skript
 # Texnik bandlar (7, 8, 9, 11, 20) o'lchov natijalaridan avtomatik aniqlanadi; tashkiliy bandlar DALIL lug'atidan.
-# Talaba DALIL lug'atini o'z tizimi uchun to'ldiradi: holat ("ha"/"qisman"/"yo'q") va dalil matni.
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
 from sklearn.datasets import load_digits
 from sklearn.linear_model import LogisticRegression
@@ -14,26 +13,13 @@ from sklearn.model_selection import train_test_split
 from fairlearn.metrics import demographic_parity_difference, equalized_odds_difference
 torch.manual_seed(0); np.random.seed(0)
 
-# ---- 1) Tezkor o'lchovlar (laboratoriya tizimi uchun) ----
+# ---- 1) Tezkor o'lchovlar ----
 d = load_digits()
 Xtr, Xte, ytr, yte = train_test_split(d.data / 16.0, d.target, test_size=0.3, random_state=0, stratify=d.target)
 Xtr, Xte, ytr, yte = map(torch.tensor, (Xtr.astype(np.float32), Xte.astype(np.float32), ytr, yte))
-m = nn.Sequential(nn.Linear(64, 128), nn.ReLU(), nn.Linear(128, 10)); opt = torch.optim.Adam(m.parameters(), 3e-3)
-for _ in range(250): opt.zero_grad(); F.cross_entropy(m(Xtr), ytr).backward(); opt.step()
-m.eval()
-def fgsm(x, y, eps):
-    x = x.clone().requires_grad_(True); g, = torch.autograd.grad(F.cross_entropy(m(x), y), x)
-    return (x + eps * g.sign()).clamp(0, 1).detach()
-with torch.no_grad(): clean_acc = (m(Xte).argmax(1) == yte).float().mean().item()
-adv_acc = (m(fgsm(Xte, yte, 0.1)).argmax(1) == yte).float().mean().item()
-
-rng = np.random.default_rng(0); n = 4000
-A = rng.binomial(1, 0.4, n); inc = rng.normal(5 - 0.8 * A, 1, n); h = rng.normal(0, 1, n)
-yf = ((0.9 * inc + h + rng.normal(0, 1, n)) > 4.5).astype(int)
-Xf = np.c_[inc, h]; clf = LogisticRegression().fit(Xf[:3000], yf[:3000]); pf = clf.predict(Xf[3000:])
-dp = demographic_parity_difference(yf[3000:], pf, sensitive_features=A[3000:])
-eo = equalized_odds_difference(yf[3000:], pf, sensitive_features=A[3000:])
-OLCHOV = {"toza_aniqlik": clean_acc, "fgsm_aniqlik_eps0.1": adv_acc, "dp_farqi": dp, "eo_farqi": eo,
+# TODO 1: kichik MLP o'qiting; toza aniqlik va FGSM (eps=0.1) aniqligini o'lchang
+# TODO 2: sintetik kredit ma'lumotida (A, income, history) LogisticRegression; DP va EO farqlarini o'lchang
+OLCHOV = {"toza_aniqlik": None, "fgsm_aniqlik_eps0.1": None, "dp_farqi": None, "eo_farqi": None,
           "urug_belgilangan": True, "versiyalar_qayd": {"torch": torch.__version__}}
 
 # ---- 2) Dalillar (talaba to'ldiradi) ----
@@ -60,25 +46,13 @@ BANDLAR = {1: "Maqsad va ta'sir ko'lami hujjatlashtirilgan", 2: "Xavf darajasi a
  20: "Takrorlanuvchanlik (urug', versiyalar)"}
 
 def baholash(n):
-    """Har band uchun (holat, dalil) qaytaradi. Texnik bandlar avtomatik."""
-    o = OLCHOV
-    if n == 7:  return ("ha" if o["eo_farqi"] < 0.05 else "qisman"), f"EO farqi={o['eo_farqi']:.3f}, DP farqi={o['dp_farqi']:.3f}"
-    if n == 8:  return "ha", f"toza={o['toza_aniqlik']:.3f}, FGSM eps=0.1 -> {o['fgsm_aniqlik_eps0.1']:.3f}"
-    if n == 9:  return ("ha" if o["fgsm_aniqlik_eps0.1"] >= 0.5 else "yo'q"), f"adversarial aniqlik={o['fgsm_aniqlik_eps0.1']:.3f}"
-    if n == 11: return "qisman", "saliency korrelyatsiyasi o'lchangan, sodiqlik (deletion) o'lchanmagan"
-    if n == 20: return ("ha" if o["urug_belgilangan"] and o["versiyalar_qayd"] else "yo'q"), f"seed=0, torch={o['versiyalar_qayd']['torch']}"
-    holat, dalil = DALIL.get(n, ("yo'q", ""))
-    if holat == "ha" and not dalil.strip(): holat = "qisman"      # dalilsiz "bajarilgan" qabul qilinmaydi
-    return holat, dalil or "-"
+    """Har band uchun (holat, dalil) qaytaradi."""
+    # TODO 3: texnik bandlar (7, 8, 9, 11, 20) — OLCHOV va band nomidagi chegaralar bo'yicha avtomatik holat
+    # TODO 4: qolganlari DALIL dan; dalilsiz "ha" -> "qisman"
+    raise NotImplementedError("TODO 3-4: baholash")
 
 BALL = {"ha": 5, "qisman": 2.5, "yo'q": 0}
 print("=== Etik tekshiruv ro'yxati (ISO/IEC 42001, 23894, EU AI Act, NIST AI RMF) ===")
-print(f"{'№':>2s} {'Band':58s} {'Holat':8s} Dalil"); jami = 0; yoq = []
+# TODO 5: 20 bandni baholab jadvalni chiqaring, jami ballni va bajarilmagan bandlarni yig'ing; "Umumiy ball: .. / 100" va xulosa daraja
 for n in range(1, 21):
-    h, dl = baholash(n); jami += BALL[h]; yoq += [n] if h == "yo'q" else []
-    print(f"{n:2d} {BANDLAR[n]:58s} {h:8s} {dl[:60]}")
-print(f"\nUmumiy ball: {jami:.1f} / 100   bajarilmagan bandlar: {yoq}")
-daraja = "yetarli (ishlab chiqarishga tayyor emas, lekin audit boshlanishi mumkin)" if jami >= 70 else \
-         "qoniqarsiz — yuqori xavfli sohada ishlatish mumkin emas" if jami < 50 else "qisman — tashkiliy bandlar to'ldirilsin"
-print(f"Xulosa: {daraja}")
-print("Eslatma: yuqori xavfli tizim (kredit, tibbiyot, bandlik) uchun 12, 14, 18-bandlar majburiy (AI Act 9, 12, 14-m.).")
+    h, dl = baholash(n)

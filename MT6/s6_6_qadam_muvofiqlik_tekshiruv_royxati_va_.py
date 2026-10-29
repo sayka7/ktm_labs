@@ -43,48 +43,20 @@ CURRENT = {"Q4": (3, "doira hujjati v1"), "Q5": (2, "siyosat loyihasi"), "Q6": (
 RISK_CLASS = "yuqori"                       # EU AI Act toifasi (2-qadamdan): yuqori xavfda maqsadli yetuklik yuqori
 TARGET = {1: 3, 2: 3, 3: 4} if RISK_CLASS == "yuqori" else {1: 2, 2: 3, 3: 3}
 
-rows = []
-for rid, src, area, text, w, rel in REQ:
-    cur, ev = CURRENT.get(rid, (0, ""))
-    if cur >= 2 and not ev: cur = 1           # dalilsiz yuqori baho qabul qilinmaydi
-    tgt = TARGET[w]; gap = max(0, tgt - cur)
-    rows.append(dict(id=rid, manba=src, soha=area, talab=text, vazn=w, joriy=cur, maqsad=tgt, gap=gap, ustuvorlik=gap * w,
-                     holat="bajarilgan" if gap == 0 else ("qisman" if cur >= 2 else "bajarilmagan"), dalil=ev or "—", boglanish=rel or "—"))
-df = pd.DataFrame(rows)
-df["manba_guruh"] = df.manba.str.extract(r"^(ISO/IEC \d+|EU AI Act)")[0]
-
 def md_table(d, cols):
     out = ["| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)]
     for _, r in d.iterrows(): out.append("| " + " | ".join(str(r[c]) for c in cols) + " |")
     return "\n".join(out)
 
-cov = df.groupby("manba_guruh").apply(lambda g: pd.Series({"talablar": len(g), "bajarilgan": (g.gap == 0).sum(),
-          "qamrov_%": round(100 * (g.joriy.clip(upper=g.maqsad) / g.maqsad).mean())}), include_groups=False).reset_index()
-score = round(100 * (df.joriy.clip(upper=df.maqsad) * df.vazn).sum() / (df.maqsad * df.vazn).sum())
-top = df.sort_values(["ustuvorlik", "vazn"], ascending=False).head(8)
-report = f"""# Muvofiqlik gap-tahlili hisoboti
-**Tizim:** kredit skoring AI tizimi · **EU AI Act toifasi:** {RISK_CLASS} · **Umumiy muvofiqlik indeksi:** {score}/100
+rows = []
+# TODO 1: har talab uchun joriy yetuklik va dalil (CURRENT); dalilsiz >= 2 baho 1 ga tushiriladi
+# TODO 2: maqsad = TARGET[vazn], gap = max(0, maqsad - joriy), ustuvorlik = gap x vazn,
+#         holat: gap 0 -> bajarilgan, joriy >= 2 -> qisman, aks holda bajarilmagan
+for rid, src, area, text, w, rel in REQ:
+    raise NotImplementedError("TODO 1-2: talab qatorini baholash")
+df = pd.DataFrame(rows)
 
-## 1. Manbalar bo'yicha qamrov
-{md_table(cov, ["manba_guruh", "talablar", "bajarilgan", "qamrov_%"])}
-
-## 2. Eng ustuvor 8 ta bo'shliq (ustuvorlik = gap x vazn)
-{md_table(top, ["id", "manba", "talab", "joriy", "maqsad", "ustuvorlik", "boglanish"])}
-
-## 3. Holat bo'yicha xulosa
-- Bajarilgan: {(df.holat == 'bajarilgan').sum()}, qisman: {(df.holat == 'qisman').sum()}, bajarilmagan: {(df.holat == 'bajarilmagan').sum()} (jami {len(df)})
-- Yuqori xavf toifasida majburiy (vazn 3) bajarilmagan talablar: {', '.join(df[(df.vazn == 3) & (df.holat == 'bajarilmagan')].id)}
-- Xulosa: {"joriy etishdan oldin bo'shliqlarni yopish SHART" if ((df.vazn == 3) & (df.holat == 'bajarilmagan')).any() else "joriy etishga tayyor (monitoring bilan)"}
-"""
-print(report)
-print("=== Bog'lanishlar (crosswalk): bitta chora bir necha manba talabini yopadi ===")
-links = df[df.boglanish != "—"][["id", "boglanish"]]
-print(links.to_string(index=False))
-
-areas = df.sort_values("manba").reset_index(drop=True)
-fig, ax = plt.subplots(figsize=(10, 3.5)); x = np.arange(len(areas))
-ax.bar(x, areas.maqsad, color="#ddd", label="maqsad"); ax.bar(x, areas.joriy, color=["#c0392b" if g >= 2 else "#e67e22" if g == 1 else "#27ae60" for g in areas.gap], label="joriy")
-ax.set_xticks(x); ax.set_xticklabels(areas.id, fontsize=7, rotation=90); ax.set_ylabel("yetuklik (0-5)"); ax.legend(fontsize=8); ax.set_title("Talablar bo'yicha yetuklik: joriy vs maqsad")
-plt.tight_layout()
-print("\nIzoh: haqiqiy auditda har talab standartning rasmiy matni bilan solishtiriladi va dalillar (hujjat, yozuv,")
-print("intervyu) auditor tomonidan tekshiriladi; bu skript faqat tayyorgarlik (o'z-o'zini baholash) vositasi.")
+# TODO 3: manba guruhi (ISO/IEC 42001, ISO/IEC 23894, EU AI Act) bo'yicha qamrov foizi
+# TODO 4: umumiy muvofiqlik indeksi = vaznli (min(joriy, maqsad)) / vaznli maqsad x 100
+# TODO 5: top-8 bo'shliq va xulosa bilan Markdown hisobot ("# Muvofiqlik gap-tahlili hisoboti") yasang
+# TODO 6: crosswalk — boshqa manbalarga bog'langan talablar ro'yxati

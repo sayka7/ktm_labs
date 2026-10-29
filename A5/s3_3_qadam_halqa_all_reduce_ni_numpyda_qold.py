@@ -11,27 +11,12 @@ def ring_allreduce(grads):
     """grads: ro'yxat, har bir ishchining gradient vektori (bir xil uzunlik).
     Qaytaradi: har ishchidagi natija (yig'indi) va har ishchi yuborgan baytlar soni."""
     N = len(grads); L = len(grads[0])
-    chunks = np.array_split(np.arange(L), N)           # vektor N bo'lakka bo'linadi
-    buf = [g.astype(np.float32).copy() for g in grads]  # har ishchining mahalliy buferi
+    chunks = np.array_split(np.arange(L), N)
+    buf = [g.astype(np.float32).copy() for g in grads]
     sent = [0] * N
-    # 1-bosqich: reduce-scatter — N-1 qadam, har qadamda ishchi i bo'lak (i-k) ni o'ng qo'shnisiga yuboradi
-    for k in range(N - 1):
-        pkts = []
-        for i in range(N):
-            c = chunks[(i - k) % N]
-            pkts.append((c, buf[i][c].copy())); sent[i] += len(c) * 4
-        for i in range(N):
-            c, data = pkts[(i - 1) % N]                 # chap qo'shnidan kelgan bo'lak
-            buf[i][c] += data                           # qo'shib qo'yiladi (reduce)
-    # 2-bosqich: all-gather — N-1 qadam, tayyor bo'lgan bo'lak halqa bo'ylab tarqatiladi
-    for k in range(N - 1):
-        pkts = []
-        for i in range(N):
-            c = chunks[(i + 1 - k) % N]
-            pkts.append((c, buf[i][c].copy())); sent[i] += len(c) * 4
-        for i in range(N):
-            c, data = pkts[(i - 1) % N]
-            buf[i][c] = data                            # almashtiriladi (gather)
+    # TODO 1: reduce-scatter — N-1 qadam: har ishchi bitta bo'lakni o'ng qo'shnisiga yuboradi, qabul qilgan bo'lakni o'zinikiga qo'shadi
+    # TODO 2: all-gather — N-1 qadam: tayyor bo'laklar halqa bo'ylab tarqatiladi (qo'shilmaydi, almashtiriladi)
+    raise NotImplementedError("TODO 1-2: ring all-reduce")
     return buf, sent
 
 print("=== Ring all-reduce tekshiruvi ===")
@@ -40,20 +25,9 @@ for N in (2, 4, 8):
     L = 1000
     grads = [rng.standard_normal(L) for _ in range(N)]
     out, sent = ring_allreduce(grads)
-    ref = np.sum(grads, axis=0)
-    ok = all(np.allclose(o, ref, atol=1e-4) for o in out)
-    S = L * 4
-    theory = 2 * (N - 1) / N * S
-    print(f"N={N:2d}: natija to'g'ri={ok}  har ishchi yubordi={sent[0]} bayt  formula 2(N-1)/N*S={theory:.0f} bayt  "
-          f"(sodda 'hammaga yuborish' bo'lsa {(N-1)*S} bayt)")
+    # TODO 3: natijani np.sum bilan solishtiring va yuborilgan baytlarni 2(N-1)/N*S formulasi bilan taqqoslang
+    #         (chop eting: "N=..: natija to'g'ri=..  har ishchi yubordi=.. bayt  formula ..")
 
 print("\n=== Aloqa hajmi va vaqti: ResNet-50 (25.6 mln parametr, FP32 = 102 MB) ===")
-S_bytes = 25.6e6 * 4
 nets = {"NVLink (600 GB/s)": 600e9, "InfiniBand 100 Gbit/s": 100e9 / 8, "Ethernet 10 Gbit/s": 10e9 / 8}
-print(f"{'N GPU':>6s} {'bayt/GPU, MB':>13s} " + " ".join(f"{k:>24s}" for k in nets))
-for N in (2, 4, 8, 16, 64):
-    per = 2 * (N - 1) / N * S_bytes
-    print(f"{N:6d} {per / 1e6:13.1f} " + " ".join(f"{per / bw * 1e3:22.1f}ms" for bw in nets.values()))
-print("\nXulosa: N oshganda har GPU yuboradigan hajm 2S ga intiladi (ishchilar sonidan deyarli bog'liq emas),")
-print("lekin tarmoq sekin bo'lsa (10 GbE) qadam sayin ~160 ms aloqa — hisoblash vaqtiga teng yoki undan ko'p.")
-print("BF16 gradient yuborilsa hajm 2 baravar kamayadi; gradient to'plash all-reduce chastotasini kamaytiradi.")
+# TODO 4: N = 2, 4, 8, 16, 64 uchun har GPU yuboradigan MB va har tarmoqdagi aloqa vaqtini (ms) jadvalda chiqaring

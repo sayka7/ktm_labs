@@ -1,6 +1,7 @@
 # MT2. AI modelini optimallashtirish: latency, throughput va energiya samaradorligi tahlili (ONNX Runtime, TensorRT, OpenVINO)
 
 📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT2_laboratoriya_qollanma.pdf`
+🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda akselerometr signallari bo'yicha harakat turini (yurish, yugurish, zina, yiqilish) aniqlovchi depthwise-separable 1D CNN chekka qurilma va server uchun optimallashtiriladi: to'g'ri o'lchov metodikasi, ONNX eksport va operatorlar profili, FP16/BF16/INT8 formatlari, dinamik paketlash va navbat simulyatsiyasi, parallellik (oqimlar, sessiyalar), energiya modeli va DVFS, yakuniy Pareto tahlili. Real labdan farqi: GPU, TensorRT va OpenVINO yo'q — ONNX Runtime CPU'da o'lchanadi, TensorRT/OpenVINO'ning mos sozlamalari va buyruqlari izoh sifatida beriladi, energiya esa quvvat modeli bilan baholanadi (raqamlar taxminiy).
 
 ## Muhit
@@ -15,7 +16,16 @@ Mahalliy kompyuterda: `pip install -r ../requirements.txt` (yoki ildizdagi Docke
 
 Sintetik HAR ma'lumoti (3 o'q x 128 nuqta, 6 sinf, sensor shovqini bilan) yaratiladi va HARNet (depthwise-separable 1D CNN, ~8 ming parametr) 5 epoxa o'qitiladi. Asosiy e'tibor — **to'g'ri o'lchash**: taymer aniqligi, isinish (birinchi chaqiruv sekin), bir konfiguratsiyani 5 marta takrorlab p50/p95/p99/p99.9 va variatsiya koeffitsienti (CV). PyTorch eager va TorchScript (trace + freeze) solishtiriladi; kechikish gistogrammasi uzun dumni ko'rsatadi.
 
-Fayl: `s1_1_qadam_etalon_model_va_olchov_metodikas.py` — ishga tushirish: `python3 s1_1_qadam_etalon_model_va_olchov_metodikas.py`
+Fayl: `s1_1_qadam_etalon_model_va_olchov_metodikas.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s1_1_qadam_etalon_model_va_olchov_metodikas.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Bu bosqichda model aniqligidan tashqari aynan nimani o'rganyapmiz: tez modelni yoki «to'g'ri o'lchash»ni? Qaysi raqamlar ishonchli bo'lishi kerak?
+2. Nima uchun bitta chaqiruv vaqtini o'lchash uchun time.time() emas, time.perf_counter() tanlanadi? Taymer aniqligi 1 ms bo'lsa, 0,5 ms li chaqiruvni o'lchab bo'ladimi?
+3. Yangi modelning 1-chaqiruvi nega keyingilaridan ~3 marta sekin bo'ladi? Agar isinishni tashlab o'rtacha olsangiz, natija qayerga siljiydi?
+4. Kechikish taqsimoti uzun dumli bo'lsa, o'rtacha qiymat SLO uchun nimani yashiradi? Qaysi foizlar foydalanuvchi tajribasini yaxshiroq aks ettiradi?
+5. Bir xil konfiguratsiyani 5 marta o'lchash nima beradi? Natijalar tarqalishini bitta o'lchamsiz son bilan qanday ifodalaysiz?
+6. TorchScript trace + freeze eager rejimdan nima hisobiga tezroq bo'lishi mumkin? Kutilgan p50 lar (~0,37 ms va ~0,56 ms) sizda qanday nisbatda chiqdi?
 
 Kutilgan natija: Test aniqligi ~0,92; 1-chaqiruv ~1,5 ms, keyingilari ~0,55 ms; TorchScript p50 ~0,37 ms (eager ~0,56 ms), CV < 1% (taxminiy).
 
@@ -29,7 +39,16 @@ Tajriba qilib ko'ring:
 
 Model ONNX'ga (opset 17, dinamik batch) eksport qilinadi. ORT ning 4 ta optimallashtirish darajasi uchun optimallashtirilgan grafik faylga saqlanib, tugunlar va operatorlar ro'yxati (Conv+Relu → FusedConv) solishtiriladi — bu TensorRT'ning engine qurishdagi va OpenVINO'ning kompilyatsiyadagi qatlam birlashtirishiga o'xshaydi. So'ngra `enable_profiling` bilan har operatorning vaqt ulushi hisoblanadi (trtexec --dumpProfile analogi) va Amdahl qonuni bo'yicha optimallashtirish nuqtasi aniqlanadi.
 
-Fayl: `s2_2_qadam_onnx_eksport_grafik_optimallasht.py` — ishga tushirish: `python3 s2_2_qadam_onnx_eksport_grafik_optimallasht.py`
+Fayl: `s2_2_qadam_onnx_eksport_grafik_optimallasht.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s2_2_qadam_onnx_eksport_grafik_optimallasht.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. ONNX eksportda batch o'lchamini dinamik qilmasangiz, keyingi qadamlarda batch 64 bilan ishlatish mumkinmi? Eksportga yana qanday ma'lumot kerak (opset, kirish/chiqish nomlari)?
+2. Grafik qanday tugunlardan iborat — BatchNorm tugunlari eksportdan keyin ham bormi? Nega eval rejimida ular yo'qolishi mumkin?
+3. ORT optimallashtirgan grafikni qanday qilib ko'rish mumkin? DISABLE_ALL dan ALL ga o'tganda tugunlar soni (kutilgan 14 → 11) nima hisobiga kamayadi?
+4. Daraja bo'yicha kechikishni adolatli solishtirish uchun qaysi shartlar bir xil bo'lishi kerak (oqimlar soni, isinish, takrorlar)?
+5. Nima uchun ORT PyTorch eager'dan ~8 marta tez chiqishi mumkin, holbuki ikkalasi ham bir xil CPU'da bir xil hisobni bajaradi?
+6. Qaysi operator vaqtning ko'p qismini oladi va Amdahl qonuni bo'yicha optimallashtirishni nimadan boshlash kerak? Profil faylida qaysi hodisalar operator vaqtini bildiradi?
 
 Kutilgan natija: 14 tugun → 11 (FusedConv:3); ORT PyTorch eager'dan ~8 marta tez (~0,07 ms); profilda Conv/FusedConv vaqtning ~80% ini oladi (taxminiy).
 
@@ -43,7 +62,16 @@ Tajriba qilib ko'ring:
 
 O'qitilgan model 6 ko'rinishda solishtiriladi: ORT FP32, FP16 vazn yaxlitlash simulyatsiyasi (TensorRT --fp16 / OpenVINO FP16 IR ning sonli ta'siri), INT8 dinamik, INT8 statik QDQ (MinMax va Percentile) va QOperator (QLinearConv) formatlari, qo'shimcha ravishda PyTorch BF16 autocast. Aniqlikdan tashqari kvantlash xatosining sezgirroq o'lchovlari — FP32 bilan bashorat mosligi, max|Δlogit| va KL divergensiya — hamda hajm, batch 1 kechikishi va batch 64 throughput o'lchanadi.
 
-Fayl: `s3_3_qadam_hisoblash_aniqligi_formatlari_fp.py` — ishga tushirish: `python3 s3_3_qadam_hisoblash_aniqligi_formatlari_fp.py`
+Fayl: `s3_3_qadam_hisoblash_aniqligi_formatlari_fp.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s3_3_qadam_hisoblash_aniqligi_formatlari_fp.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Olti xil format solishtirilyapti. Har biri uchun qaysi o'lchovlar kerak va nega faqat aniqlikning o'zi yetarli emas?
+2. FP16 ning sonli ta'sirini FP16 qo'llab-quvvatlovchi apparatsiz qanday simulyatsiya qilish mumkin? Vaznni float16 ga o'tkazib qaytarsangiz nima yo'qoladi?
+3. Dinamik va statik kvantlashning farqi nimada: faollashuv masshtabi qachon hisoblanadi? Statik uchun kalibrlash ma'lumoti nima uchun kerak va qancha namuna yetarli?
+4. MinMax va Percentile kalibrlash qachon farq qiladi? QDQ va QOperator formatlarida grafik qanday ko'rinadi — qaysi birida QLinearConv bo'ladi?
+5. Kvantlangan model FP32 dan qanchalik uzoqlashganini ikki taqsimot orasidagi masofa bilan qanday baholaysiz?
+6. Nega bu CPU'da dinamik INT8 FP32 dan sekin (~0,4x), statik INT8 esa ~1,9x tez chiqishi mumkin? Hajm (~33 KB → ~16–24 KB) nimaga bog'liq?
 
 Kutilgan natija: Aniqlik barcha formatlarda ~0,92 (±0,5 p.p.), moslik >= 99%; INT8 statik hajmi ~16–24 KB (FP32 ~33 KB), throughput ~1,9x; dinamik INT8 bu modelda ~0,4x sekin (taxminiy).
 
@@ -57,7 +85,16 @@ Tajriba qilib ko'ring:
 
 Batch 1–128 uchun xizmat vaqti o'lchanadi va chiziqli model S(b) = c0 + c1·b moslanadi (c0 — har chaqiruv ustamasi, c1 — namuna narxi). So'ngra Puasson oqimi bilan navbat simulyatsiyasi: paketsiz, dinamik paketlash (b<=16, kutish 0,3 ms) va (b<=64, kutish 1 ms) siyosatlari turli yuklamada p50/p99 va throughput bo'yicha solishtiriladi (Triton dynamic_batching, OpenVINO avtomatik paketlash g'oyasi). Xuddi shu simulyatsiya GPU uslubidagi S(b) (katta c0, kichik c1 — faraziy) uchun takrorlanadi.
 
-Fayl: `s4_4_qadam_paket_va_oqim_tahlili_s_b_modeli.py` — ishga tushirish: `python3 s4_4_qadam_paket_va_oqim_tahlili_s_b_modeli.py`
+Fayl: `s4_4_qadam_paket_va_oqim_tahlili_s_b_modeli.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s4_4_qadam_paket_va_oqim_tahlili_s_b_modeli.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Paket o'lchami oshganda bitta chaqiruv vaqti va throughput qanday o'zgaradi? Qaysi ikkita kattalik bilan xizmat vaqtini taxminan tavsiflash mumkin?
+2. Katta batch'lar uchun ham ishonchli median olish uchun takrorlar sonini qanday tanlaysiz? Nega kichik batch'da ko'proq takror kerak?
+3. Puasson oqimida ketma-ket so'rovlar orasidagi vaqt qanday taqsimlangan? lam so'rov/s bo'lsa, o'rtacha interval necha ms?
+4. Dinamik paketlashda paket qachon jo'natiladi: to'lganda yoki birinchi so'rov max_wait kutganda? Ishchi band bo'lsa nima bo'ladi?
+5. Kechikish SLO (p99 ≤ 2 ms) ni saqlagan holda qaysi siyosat eng katta yuklamani ko'taradi? max_wait ni oshirish kechikish va throughput'ga qanday ta'sir qiladi?
+6. Nega GPU uslubidagi S(b) (c0 = 0,40, c1 = 0,004 ms) da dinamik paketlash SLO ichidagi yuklamani ~1000 dan ~60 000 so'rov/s gacha oshiradi, bu CPU'da esa foydasi kam?
 
 Kutilgan natija: Bu CPU'da c0 kichik (~0,02 ms), throughput batch bilan ~15k → ~18,5k inf/s; GPU uslubida dinamik paketlash SLO ichidagi yuklamani ~1000 dan ~60 000 so'rov/s gacha oshiradi (taxminiy).
 
@@ -71,7 +108,16 @@ Tajriba qilib ko'ring:
 
 Kengroq model (w=64) uchun 5 konfiguratsiya batch 1 va 32 da o'lchanadi: 1 sessiya/1 oqim, intra=2, umumiy sessiyaga 2 Python oqimi, 2 sessiya x 1 oqim va ortiqcha obuna (intra=2 x 2 oqim). Natija OpenVINO'ning NUM_STREAMS va PERFORMANCE_HINT (LATENCY/THROUGHPUT), TensorRT'ning bir nechta execution context + CUDA stream tushunchalari bilan jadvalda bog'lanadi.
 
-Fayl: `s5_5_qadam_parallellik_intra_op_oqimlar_ses.py` — ishga tushirish: `python3 s5_5_qadam_parallellik_intra_op_oqimlar_ses.py`
+Fayl: `s5_5_qadam_parallellik_intra_op_oqimlar_ses.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s5_5_qadam_parallellik_intra_op_oqimlar_ses.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Parallellikning ikki turi bor: bitta so'rovni tezlashtirish va ko'p so'rovni bir vaqtda bajarish. Ular kechikish va throughput'ga qanday ta'sir qiladi?
+2. Nega bu bosqichda kengroq model (w=64) olinadi? Juda kichik modelda oqimlar qo'shish nima uchun samara bermasligi mumkin?
+3. Bir nechta Python oqimi bitta umumiy so'rovlar navbatini qanday qilib xavfsiz bo'lishib oladi? Har oqim qaysi sessiyani ishlatadi?
+4. Throughput'ni qanday hisoblaysiz: har chaqiruv vaqtidanmi yoki umumiy devor vaqtidanmi? Nega ko'p oqimda bu ikkisi farq qiladi?
+5. 2 yadroli CPU'da intra=2 × 2 oqim (E) qanday natija beradi deb kutasiz? Ortiqcha obuna (oversubscription) nima uchun p99 ni keskin oshiradi?
+6. ORT sozlamalariga OpenVINO (NUM_STREAMS, PERFORMANCE_HINT) va TensorRT (execution context + CUDA stream) da nima mos keladi?
 
 Kutilgan natija: Eng past kechikish — intra=2 (1 oqim); eng yuqori throughput — 2 sessiya x 1 oqim (~2x); ortiqcha obunada p99 keskin oshadi (taxminiy).
 
@@ -85,7 +131,16 @@ Tajriba qilib ko'ring:
 
 RAPL/nvidia-smi yo'qligi sababli quvvat modeli ishlatiladi: P = P_bosh + (P_max − P_bosh)·bandlik, bandlik = CPU vaqti / (devor vaqti·yadro). FP32 va INT8 statik, 1/2 oqim, batch 1/32 uchun µJ/inferens (to'liq va dinamik), inf/J va EDP (energiya x kechikish) hisoblanadi. So'ngra DVFS simulyatsiyasi: P_din ~ f·V², kechikish ~ 1/f — SLO ichida eng tejamkor chastota va «race-to-idle» sharti; oxirida Jetson uslubidagi nvpmodel rejimlari (faraziy raqamlar) bo'yicha tanlov.
 
-Fayl: `s6_6_qadam_energiya_samaradorligi_j_inferen.py` — ishga tushirish: `python3 s6_6_qadam_energiya_samaradorligi_j_inferen.py`
+Fayl: `s6_6_qadam_energiya_samaradorligi_j_inferen.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s6_6_qadam_energiya_samaradorligi_j_inferen.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Quvvatni bevosita o'lchaydigan sensor (RAPL, nvidia-smi) bo'lmasa, energiyani nimaga asoslanib baholash mumkin? Qaysi kattaliklar o'lchanadi, qaysilari faraz?
+2. J/inferens ni to'liq va faqat dinamik qism bo'yicha hisoblash nima uchun farq qiladi? Bosh holat quvvati qaysi variantni ko'proq «jazolaydi»?
+3. 2 oqimda bandlik ~2 marta oshadi. Tezlik 2 martadan kam oshsa, energiya/inferens qanday o'zgaradi? Batch 32 nima uchun energiyani tejaydi?
+4. DVFS'da chastota pasayganda dinamik quvvat va kechikish qanday o'zgaradi? Nega energiya/inferens chastotaga nisbatan monoton emas?
+5. Race-to-idle qachon foydali: statik (oqish) quvvati katta bo'lgandami yoki kichik bo'lgandami? Bu SLO cheklovi bilan qanday birga ishlaydi?
+6. Jetson rejimlaridan qaysi biri 15 000 inf/s talabini eng kam energiya bilan bajaradi? «Eng kuchli» rejim har doim eng yaxshimi?
 
 Kutilgan natija: Eng kam energiya — INT8 statik, 1 oqim, batch 32 (~500 µJ/inf, taxminiy); 2 oqim batch 1 da energiya oshadi; DVFS optimumi ~1,2 GHz, statik quvvat katta bo'lsa optimum yuqori chastotaga siljiydi.
 
@@ -99,7 +154,16 @@ Tajriba qilib ko'ring:
 
 6 konfiguratsiya (PyTorch eager, ORT FP32 1/2 oqim, INT8 dinamik, INT8 statik 1/2 oqim) bitta jadvalga yig'iladi: aniqlik, p99 (batch 1), throughput (batch 32), µJ/inferens va hajm. To'rt mezonli Pareto chegarasi aniqlanadi va uch ssenariy (bilakuzuk, kasalxona serveri, real vaqt signali) uchun cheklovlar va maqsad funksiyasi bo'yicha konfiguratsiya tanlanadi. Oxirida GPU/NPU li stendda bajariladigan trtexec, ovc/benchmark_app va quvvat o'lchash buyruqlari beriladi.
 
-Fayl: `s7_7_qadam_yakuniy_pareto_tahlili_ssenariy_.py` — ishga tushirish: `python3 s7_7_qadam_yakuniy_pareto_tahlili_ssenariy_.py`
+Fayl: `s7_7_qadam_yakuniy_pareto_tahlili_ssenariy_.py` — karkas: `TODO` joylarini o'zingiz to'ldiring, so'ng `python3 s7_7_qadam_yakuniy_pareto_tahlili_ssenariy_.py`
+
+Yo'naltiruvchi savollar (avval o'zingiz javob bering):
+
+1. Yakuniy taqqos uchun har konfiguratsiyadan qaysi 5 ta ko'rsatkich kerak va ularning qaysilari kichik, qaysilari katta bo'lgani yaxshi?
+2. Bitta o'lchov funksiyasida ham kechikish, ham throughput, ham energiyani qanday olasiz? Energiyani 6-qadamdagi qaysi formula bilan hisoblaysiz?
+3. Konfiguratsiya qachon Pareto-optimal hisoblanadi? Mezonlar turli yo'nalishda (min/max) bo'lsa, ularni qanday bir xil ko'rinishga keltirasiz?
+4. Ssenariyni qanday rasmiylashtirish mumkin: cheklovlar (filtr) va maqsad funksiyasi (min yoki max)? Bilakuzuk uchun qaysi cheklovlar muhim?
+5. Natijalaringiz kutilganga mosmi: Pareto chegarasida INT8 statik konfiguratsiyalar, bilakuzuk uchun INT8 statik 1 oqim? Farq bo'lsa, buning sababi nima bo'lishi mumkin?
+6. Bu CPU natijalarini GPU/NPU li stendda qanday tekshirasiz? TensorRT va OpenVINO uchun qaysi asboblar kechikish, profil va quvvatni beradi?
 
 Kutilgan natija: Pareto chegarasida INT8 statik konfiguratsiyalar; bilakuzuk uchun INT8 statik 1 oqim, server uchun eng yuqori throughput'li variant tanlanadi; grafikda qizil nuqtalar — Pareto (raqamlar taxminiy).
 

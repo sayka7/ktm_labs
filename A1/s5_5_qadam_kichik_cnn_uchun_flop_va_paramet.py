@@ -6,8 +6,6 @@ Kutilgan natija: Qatlamlar jadvali (5 ta Conv2d), jami 41,58 MFLOP hook va FlopC
 """
 # 5-qadam. Kichik CNN uchun FLOP va parametrlarni hisoblash (torch) va CPU'da o'lchash
 # Formula: Conv2d FLOP = 2*Kh*Kw*Cin/groups*Cout*Hout*Wout, Linear FLOP = 2*Nin*Nout.
-# Qo'lda yozilgan hook'lar bilan hisoblab, torch'ning FlopCounterMode natijasi bilan solishtiramiz,
-# so'ng haqiqiy CPU vaqtini o'lchab erishilgan GFLOP/s ni topamiz.
 import time
 import torch
 import torch.nn as nn
@@ -34,26 +32,17 @@ class MiniYolo(nn.Module):
         return self.head(self.backbone(x))
 
 
-# --- Hook'lar bilan FLOP hisoblash ---
 flop_jadval = []
 
 def conv_hook(mod, inp, out):
-    kh, kw = mod.kernel_size
-    cin = mod.in_channels // mod.groups
-    hout, wout = out.shape[-2:]
-    flop = 2 * kh * kw * cin * mod.out_channels * hout * wout * out.shape[0]
-    flop_jadval.append((mod.__class__.__name__, tuple(out.shape[1:]), flop))
+    # TODO 1: formuladan Conv2d FLOP ini hisoblab, (nom, chiqish shakli, flop) ni flop_jadval ga qo'shing
+    raise NotImplementedError("TODO 1: conv_hook")
 
-def linear_hook(mod, inp, out):
-    flop = 2 * mod.in_features * mod.out_features * out.shape[0]
-    flop_jadval.append(("Linear", tuple(out.shape[1:]), flop))
 
 model = MiniYolo().eval()
+# TODO 2: modeldagi har Conv2d ga conv_hook ni forward hook sifatida ulang
 for m in model.modules():
-    if isinstance(m, nn.Conv2d):
-        m.register_forward_hook(conv_hook)
-    elif isinstance(m, nn.Linear):
-        m.register_forward_hook(linear_hook)
+    ...
 
 IMGSZ = 128
 x = torch.randn(1, 3, IMGSZ, IMGSZ)
@@ -61,40 +50,12 @@ with torch.no_grad():
     model(x)
 
 print("=== CNN FLOP hisobi ===")
-print(f"{'Qatlam':8s} {'chiqish shakli':>18s} {'MFLOP':>9s}")
-for nom, shakl, flop in flop_jadval:
-    print(f"{nom:8s} {str(shakl):>18s} {flop / 1e6:9.2f}")
-jami_hook = sum(f for _, _, f in flop_jadval)
-params = sum(p.numel() for p in model.parameters())
-print(f"Jami (hook): {jami_hook / 1e6:.2f} MFLOP, parametrlar: {params / 1e3:.1f} K, vazn FP32 {params * 4 / 1e6:.2f} MB")
+# TODO 3: qatlamlar jadvali, jami MFLOP (hook) va parametrlar sonini chiqaring
+jami_hook = None
 
-# --- torch FlopCounterMode bilan tekshirish ---
-flop_jadval.clear()
-with torch.no_grad(), FlopCounterMode(display=False) as fc:
-    model(x)
-jami_torch = fc.get_total_flops()
-print(f"Jami (torch FlopCounterMode): {jami_torch / 1e6:.2f} MFLOP  -> farq {abs(jami_torch - jami_hook) / jami_hook * 100:.2f} %")
+# TODO 4: FlopCounterMode bilan jami FLOP ni oling va hook natijasi bilan farqini (%) chiqaring
+jami_torch = None
+print(f"Jami (torch FlopCounterMode): {jami_torch / 1e6:.2f} MFLOP")
 
-# --- FLOP kirish o'lchamiga qanday bog'liq ---
 print("\n--- Kirish o'lchami va paket ta'siri (o'lchangan CPU vaqti, 2 ip) ---")
-print(f"{'imgsz':>6s} {'batch':>5s} {'MFLOP':>9s} {'ms/inferens':>12s} {'GFLOP/s':>8s}")
-for imgsz in (64, 128, 256):
-    for batch in (1, 8):
-        xx = torch.randn(batch, 3, imgsz, imgsz)
-        flop_jadval.clear()
-        with torch.no_grad():
-            model(xx)
-        flop = sum(f for _, _, f in flop_jadval)
-        with torch.no_grad():
-            for _ in range(3):                 # isinish
-                model(xx)
-            vaqtlar = []
-            for _ in range(10):
-                t0 = time.perf_counter()
-                model(xx)
-                vaqtlar.append(time.perf_counter() - t0)
-        t = sorted(vaqtlar)[len(vaqtlar) // 2]
-        print(f"{imgsz:6d} {batch:5d} {flop / 1e6:9.1f} {t / batch * 1e3:12.3f} {flop / t / 1e9:8.2f}")
-
-print("\nXulosa: FLOP kirish maydoniga (imgsz^2) proporsional; paketlash bir inferens vaqtini kamaytiradi,")
-print("chunki vaznlar keshda qoladi va BLAS yadrolari kattaroq matritsalarda samaraliroq ishlaydi.")
+# TODO 5: imgsz (64,128,256) x batch (1,8) uchun isinish + 10 o'lchov mediani -> ms/inferens va GFLOP/s

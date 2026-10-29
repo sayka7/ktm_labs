@@ -17,25 +17,21 @@ MODELS = {
     "Llama-3-8B (GQA)":  (32,    32,     8,       128,      8.0),
     "Llama-3-70B (GQA)": (80,    64,     8,       128,      70.6),
 }
+# TODO 1: KV-kesh baytlari formulasini yozing (K va V, qatlamlar, KV boshlar, head_dim, ketma-ketlik, batch, bayt)
 def kv_bytes(L, kv, hd, seq, batch, bytes_per=2):
-    return 2 * L * kv * hd * seq * batch * bytes_per
+    raise NotImplementedError("TODO 1: KV-kesh hajmi formulasi")
 
 GB = 1024 ** 3
 print("=== KV-kesh xotirasi (fp16, batch=1) ===")
 print(f"{'model':<20}{'KB/token':>10}{'4k':>9}{'32k':>9}{'128k':>9}   (GB)")
+# TODO 2: har model uchun token boshiga KB va 4k/32k/128k kontekstda GB ni chiqaring
 for name, (L, qh, kv, hd, P) in MODELS.items():
     per_tok = kv_bytes(L, kv, hd, 1, 1) / 1024
-    print(f"{name:<20}{per_tok:>10.0f}" + "".join(f"{kv_bytes(L, kv, hd, s, 1)/GB:>9.2f}" for s in (4096, 32768, 131072)))
+    ...
 
 print("\n=== 2x24 GB GPU'da sig'adigan bir vaqtdagi so'rovlar (kontekst 8k) ===")
-GPU_MEM = 2 * 24 * GB; OVERHEAD = 0.10            # 10% aktivatsiya/fragmentatsiya uchun zaxira (taxmin)
-for name, (L, qh, kv, hd, P) in MODELS.items():
-    for wbytes, wname in [(2, "fp16"), (0.5, "int4")]:
-        weights = P * 1e9 * wbytes
-        free = GPU_MEM * (1 - OVERHEAD) - weights
-        per_req = kv_bytes(L, kv, hd, 8192, 1)
-        n = int(free // per_req) if free > 0 else 0
-        print(f"{name:<20} vazn {wname}: {weights/GB:6.1f} GB  bo'sh {max(free,0)/GB:6.1f} GB  -> {n:4d} so'rov")
+GPU_MEM = 2 * 24 * GB; OVERHEAD = 0.10
+# TODO 3: vaznlar (parametr x bayt) ni ayirib, qolgan joyga 8192 tokenli KV-keshdan nechta sig'ishini hisoblang (fp16 va int4)
 
 # ---- Kichik decoder: KV-kesh bilan va keshsiz generatsiya ----
 D, H, LAYERS, VOCAB = 128, 4, 4, 500
@@ -47,10 +43,10 @@ class Block(nn.Module):
         B, T, _ = x.shape
         q, k, v = s.qkv(s.n1(x)).view(B, T, 3, H, D // H).permute(2, 0, 3, 1, 4)
         if cache is not None:
-            if "k" in cache:                       # oldingi tokenlar K/V qayta hisoblanmaydi
-                k = torch.cat([cache["k"], k], 2); v = torch.cat([cache["v"], v], 2)
-            cache["k"], cache["v"] = k, v
-        causal = cache is None or T > 1
+            # TODO 4: keshda oldingi K/V bo'lsa, yangi k, v ni ular bilan vaqt o'qi (dim=2) bo'yicha ulang
+            #         va keshni yangilang; bitta yangi token uchun causal maska kerakmi — o'ylang
+            raise NotImplementedError("TODO 4: KV-keshni yangilash")
+        causal = True
         a = F.scaled_dot_product_attention(q, k, v, is_causal=causal)
         x = x + s.o(a.transpose(1, 2).reshape(B, T, D))
         return x + s.ff(s.n2(x))
@@ -67,37 +63,13 @@ class TinyLM(nn.Module):
 @torch.no_grad()
 def generate(m, prompt, n_new, use_cache):
     ids = prompt.clone()
-    if use_cache:
-        caches = [dict() for _ in range(LAYERS)]
-        logits = m(ids, 0, caches)
-        for _ in range(n_new):
-            nxt = logits[:, -1].argmax(-1, keepdim=True); ids = torch.cat([ids, nxt], 1)
-            logits = m(nxt, ids.shape[1] - 1, caches)      # faqat YANGI token
-    else:
-        for _ in range(n_new):
-            logits = m(ids)                                 # butun ketma-ketlik qayta hisoblanadi
-            ids = torch.cat([ids, logits[:, -1].argmax(-1, keepdim=True)], 1)
-    return ids
+    # TODO 5: use_cache=False — har qadamda butun ketma-ketlikni modeldan o'tkazing;
+    #         use_cache=True — promptni bir marta o'tkazib, keyin faqat YANGI tokenni (to'g'ri pozitsiya bilan) bering
+    raise NotImplementedError("TODO 5: keshli va keshsiz greedy generatsiya")
 
 m = TinyLM().eval()
 prompt = torch.randint(0, VOCAB, (1, 64))
 a = generate(m, prompt, 32, False); b = generate(m, prompt, 32, True)
 print("\n=== Kichik decoder: KV-kesh bilan / keshsiz ===")
 print("Natija tokenlari bir xilmi:", bool(torch.equal(a, b)))
-rows = []
-for n_new in (32, 64, 128, 256):
-    t = time.perf_counter(); generate(m, prompt, n_new, False); t0 = time.perf_counter() - t
-    t = time.perf_counter(); generate(m, prompt, n_new, True); t1 = time.perf_counter() - t
-    rows.append((n_new, t0, t1))
-    print(f"yangi token={n_new:4d}  keshsiz {t0*1000:7.0f} ms   KV-kesh {t1*1000:6.0f} ms   tezlanish x{t0/t1:4.1f}")
-fig, ax = plt.subplots(1, 2, figsize=(10, 3.5))
-seq = [2 ** i for i in range(10, 18)]
-for name, (L, qh, kv, hd, P) in MODELS.items():
-    ax[0].plot(seq, [kv_bytes(L, kv, hd, s, 1) / GB for s in seq], "-o", label=name)
-ax[0].set_xscale("log", base=2); ax[0].set_xlabel("kontekst (token)"); ax[0].set_ylabel("KV-kesh, GB"); ax[0].legend(fontsize=7); ax[0].grid(alpha=.3)
-ax[1].plot([r[0] for r in rows], [r[1] * 1000 for r in rows], "-o", label="keshsiz")
-ax[1].plot([r[0] for r in rows], [r[2] * 1000 for r in rows], "-s", label="KV-kesh")
-ax[1].set_xlabel("yangi tokenlar"); ax[1].set_ylabel("ms"); ax[1].legend(); ax[1].grid(alpha=.3)
-plt.tight_layout()
-print("\nIzoh: real serverlarda (vLLM PagedAttention va h.k.) KV-kesh sahifalab boshqariladi; xotira odatda")
-print("vaznlardan keyingi asosiy cheklov — GQA, int8/fp8 KV-kesh va kontekstni qisqartirish uni kamaytiradi.")
+# TODO 6: n_new = 32, 64, 128, 256 uchun ikkala usul vaqtini time.perf_counter() bilan o'lchab, tezlanishni chiqaring

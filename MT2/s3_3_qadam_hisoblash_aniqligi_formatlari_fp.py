@@ -60,26 +60,15 @@ torch.onnx.export(model, torch.tensor(Xte[:1]), "fp32.onnx", input_names=["x"], 
                   dynamic_axes={"x": {0: "batch"}, "logits": {0: "batch"}}, opset_version=17, dynamo=False)
 quant_pre_process("fp32.onnx", "prep.onnx")
 
-# --- FP16 vazn simulyatsiyasi: vaznlarni float16 ga yaxlitlab qaytaramiz (TensorRT --fp16 / OpenVINO FP16 IR ning sonli ta'siri)
-m = onnx.load("fp32.onnx")
-for init in m.graph.initializer:
-    w = numpy_helper.to_array(init)
-    if w.dtype == np.float32: init.CopyFrom(numpy_helper.from_array(w.astype(np.float16).astype(np.float32), init.name))
-onnx.save(m, "fp16sim.onnx")
+# TODO 1: FP16 vazn simulyatsiyasi — fp32.onnx dagi float32 initializer'larni float16 ga yaxlitlab qaytaring, "fp16sim.onnx" ga saqlang
 
+# TODO 2: kalibrlash o'quvchisi — Xtr[:320] ni 32 talik bo'laklarda {"x": ...} ko'rinishida beradi, tugaganda None
 class Kalib(CalibrationDataReader):
-    def __init__(self, data): self.it = iter([{"x": data[i:i + 32]} for i in range(0, len(data), 32)])
-    def get_next(self): return next(self.it, None)
-kal = Xtr[:320]
-quantize_dynamic("prep.onnx", "int8_dyn.onnx", weight_type=QuantType.QInt8)
-quantize_static("prep.onnx", "int8_qdq_minmax.onnx", Kalib(kal), quant_format=QuantFormat.QDQ, per_channel=True,
-                activation_type=QuantType.QInt8, weight_type=QuantType.QInt8, calibrate_method=CalibrationMethod.MinMax)
-with contextlib.redirect_stdout(io.StringIO()):            # kalibrlash jarayoni chiqaradigan matnni yashiramiz
-    quantize_static("prep.onnx", "int8_qdq_pct.onnx", Kalib(kal), quant_format=QuantFormat.QDQ, per_channel=True,
-                    activation_type=QuantType.QInt8, weight_type=QuantType.QInt8, calibrate_method=CalibrationMethod.Percentile,
-                    extra_options={"CalibPercentile": 99.99})
-quantize_static("prep.onnx", "int8_qop.onnx", Kalib(kal), quant_format=QuantFormat.QOperator, per_channel=True,
-                activation_type=QuantType.QUInt8, weight_type=QuantType.QInt8, calibrate_method=CalibrationMethod.MinMax)
+    def __init__(self, data): ...
+    def get_next(self): raise NotImplementedError("TODO 2: kalibrlash ma'lumoti")
+
+# TODO 3: int8_dyn.onnx (dinamik), int8_qdq_minmax.onnx, int8_qdq_pct.onnx (Percentile 99.99) va
+#         int8_qop.onnx (QOperator, faollashuv QUInt8) fayllarini yarating
 
 def sess(f):
     so = ort.SessionOptions(); so.intra_op_num_threads = 1
@@ -92,31 +81,13 @@ def lat(s, xb, n):
     return np.array(t)
 def softmax(z): e = np.exp(z - z.max(1, keepdims=True)); return e / e.sum(1, keepdims=True)
 
-ref = sess("fp32.onnx").run(None, {"x": Xte})[0]; pref = softmax(ref)
-rows = []
 cfg = [("ORT FP32", "fp32.onnx"), ("FP16 vazn (simul.)", "fp16sim.onnx"), ("INT8 dinamik", "int8_dyn.onnx"),
        ("INT8 statik QDQ MinMax", "int8_qdq_minmax.onnx"), ("INT8 statik QDQ Percentile", "int8_qdq_pct.onnx"), ("INT8 statik QOperator", "int8_qop.onnx")]
-for nom, f in cfg:
-    s = sess(f); out = s.run(None, {"x": Xte})[0]; p = softmax(out)
-    kl = float(np.mean(np.sum(pref * np.log((pref + 1e-9) / (p + 1e-9)), 1)))
-    t1 = lat(s, Xte[:1], 300); t64 = lat(s, Xte[:64], 40)
-    rows.append((nom, os.path.getsize(f) / 1024, (out.argmax(1) == yte).mean(), (out.argmax(1) == ref.argmax(1)).mean(),
-                 np.abs(out - ref).max(), kl, np.percentile(t1, 50) * 1e3, 64 / np.median(t64)))
-# BF16: PyTorch autocast (Intel AMX / ARM bf16 li CPU'larda tezlashadi; bu yerda faqat sonli ta'sir)
-with torch.inference_mode(), torch.autocast("cpu", dtype=torch.bfloat16):
-    ob = model(torch.tensor(Xte)).float().numpy()
-pb = softmax(ob)
-rows.append(("BF16 autocast (PyTorch)", np.nan, (ob.argmax(1) == yte).mean(), (ob.argmax(1) == ref.argmax(1)).mean(),
-             np.abs(ob - ref).max(), float(np.mean(np.sum(pref * np.log((pref + 1e-9) / (pb + 1e-9)), 1))), np.nan, np.nan))
+rows = []
+# TODO 4: har konfiguratsiya uchun hajm, aniqlik, FP32 bilan bashorat mosligi, max|dlogit|, KL(FP32||q),
+#         batch 1 p50 va batch 64 throughput'ni hisoblang; BF16 autocast (PyTorch) qatorini ham qo'shing
+raise NotImplementedError("TODO 4: formatlar taqqosi jadvali")
 print("=== Aniqlik formatlari taqqosi ===")
-df = pd.DataFrame(rows, columns=["Konfiguratsiya", "Hajm, KB", "Aniqlik", "FP32 bilan moslik", "max|dlogit|", "KL", "p50 b1, ms", "inf/s b64"])
-print(df.round(4).to_string(index=False))
+
+# TODO 5: QDQ va QOperator modellaridagi operatorlarni sanab chiqaring (QLinearConv qayerda paydo bo'ladi?)
 print("\n=== Operatorlar (statik QDQ va QOperator) ===")
-for f in ("int8_qdq_minmax.onnx", "int8_qop.onnx"):
-    ops = pd.Series([n.op_type for n in onnx.load(f).graph.node]).value_counts()
-    print(f, {k: int(v) for k, v in ops.items()})
-print("Izoh: «moslik» va KL — kvantlash xatosining aniqlikdan sezgirroq o'lchovi (aniqlik tasodifan saqlanib qolishi mumkin).")
-tz = df.set_index("Konfiguratsiya")["inf/s b64"]
-print(f"Bu CPU'da: statik INT8 throughput FP32 ga nisbatan {tz['INT8 statik QOperator'] / tz['ORT FP32']:.1f}x, dinamik INT8 {tz['INT8 dinamik'] / tz['ORT FP32']:.1f}x")
-print("(dinamik kvantlash har chaqiruvda faollashuv masshtabini hisoblaydi — kichik Conv modelda bu ustama foydadan katta).")
-print("VNNI/AMX li Intel CPU (OpenVINO) yoki Tensor Core'li GPU (TensorRT) da INT8 farqi odatda kattaroq bo'ladi (taxminiy, o'lchab ko'rish shart).")
