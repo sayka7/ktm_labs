@@ -1,6 +1,5 @@
 # A7. Yakuniy kompleks loyihani shakllantirish: ma'lumot -> model -> API -> monitoring -> adolatlilik
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A7_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz tibbiy tasvir triaji loyihasining to'liq ML mahsulot ketma-ketligini mini-loyiha sifatida boshidan oxirigacha o'tasiz: sxema tekshiruvi va bemor bo'yicha sizishsiz bo'lish, model reestri va promote darvozasi, ONNX eksport, FastAPI xizmati metrikalari va audit jurnali, PSI/KS drift ogohlantirishi, fairlearn bilan kesimlar hisoboti va yakunda avtomatik tuziladigan loyiha pasporti. Real labdan farqi: sandbox'da rentgen tasvirlari, GPU va Docker yo'q — har tasvir o'rniga undan olingan 6 ta sintetik belgi, DenseNet o'rniga kichik MLP, uvicorn o'rniga TestClient ishlatiladi; lekin muhandislik qarorlari (sizish, chegara, darvoza, drift qoidasi, ko'lam cheklash) aynan haqiqiy loyihadagidek.
 

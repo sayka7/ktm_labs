@@ -1,6 +1,5 @@
 # A5. Taqsimlangan sun'iy intellekt tizimlarini ishlab chiqish
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A5_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada talaba taqsimlangan o'qitish va parallel inferensning asosiy mexanizmlarini CPU sandbox'da bajaradi: torch.distributed (gloo backend) bilan 2 jarayonli DDP, kuchli/kuchsiz masshtablash o'lchovi, halqa all-reduce algoritmini qo'lda yozish, gradient to'plash ekvivalentligi, multiprocessing Pool bilan parallel inferens, Amdal/Gustafson qonunlari va GPU klasteri uchun aloqa/hisob kalkulyatori. Real labdan farqi: GPU va NCCL yo'q — 2 ta CPU yadro «2 ta GPU» rolini o'ynaydi, modellar kichik MLP, ma'lumot sintetik yoki sklearn digits; mantiq (process group, DistributedSampler, DDP o'rami, all-reduce) esa haqiqiy klasterdagi bilan bir xil.
 

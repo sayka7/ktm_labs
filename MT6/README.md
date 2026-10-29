@@ -1,6 +1,5 @@
 # MT6. Sun'iy intellektga asoslangan kompyuter tizimlarining xavfsizligi, ishonchliligi va etik tamoyillarini xalqaro standartlar (ISO/IEC 42001, ISO/IEC 23894, EU AI Act) asosida tahlil qilish va takomillashtirish
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT6_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda talaba AI boshqaruvi (governance) vositalarini kod sifatida quradi: ISO/IEC 23894 uslubidagi xavf reyestri, EU AI Act xavf toifasini aniqlovchi qoida dvigateli, kesishgan guruhlar bo'yicha fairness audit va yumshatish, sensor ma'lumotidagi mustahkamlik testlari, tushuntiriluvchanlik tahlili, ISO/IEC 42001 asosidagi gap-tahlil hisoboti va byudjet ostida optimal takomillashtirish rejasi. Real labdan farqi: ma'lumotlar sintetik, standart talablari qisqa parafraz ko'rinishida (rasmiy matn o'rnini bosmaydi), narx va ballar shartli; natijalar o'quv maqsadidagi taxminiy baholardir, yuridik xulosa emas.
 

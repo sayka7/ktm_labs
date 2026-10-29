@@ -1,6 +1,5 @@
 # MT2. AI modelini optimallashtirish: latency, throughput va energiya samaradorligi tahlili (ONNX Runtime, TensorRT, OpenVINO)
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT2_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda akselerometr signallari bo'yicha harakat turini (yurish, yugurish, zina, yiqilish) aniqlovchi depthwise-separable 1D CNN chekka qurilma va server uchun optimallashtiriladi: to'g'ri o'lchov metodikasi, ONNX eksport va operatorlar profili, FP16/BF16/INT8 formatlari, dinamik paketlash va navbat simulyatsiyasi, parallellik (oqimlar, sessiyalar), energiya modeli va DVFS, yakuniy Pareto tahlili. Real labdan farqi: GPU, TensorRT va OpenVINO yo'q — ONNX Runtime CPU'da o'lchanadi, TensorRT/OpenVINO'ning mos sozlamalari va buyruqlari izoh sifatida beriladi, energiya esa quvvat modeli bilan baholanadi (raqamlar taxminiy).
 

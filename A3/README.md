@@ -1,6 +1,5 @@
 # A3. Sun'iy intellekt tizimlarini optimallashtirish va unumdorligini baholash
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A3_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz o'qitilgan neyron tarmoqni ishlab chiqarishga tayyorlash zanjirini to'liq bajarasiz: PyTorch modelini ONNX'ga eksport qilish, ONNX Runtime'da grafik optimallashtirish darajalari va paket o'lchamini o'lchash, PyTorch va ONNX Runtime'da INT8 kvantlash (dinamik va statik, turli kalibrlash usullari), so'ngra aniqlik-tezlik-hajm jadvali va Pareto tahlili. Real labdan farqi: ResNet-50 va ImageNet o'rniga sklearn digits (8x8) va kichik CNN/MLP, GPU/TensorRT/OpenVINO yo'q — ular o'rniga CPU muqobillari va «GPU'da bu qadam qanday bo'ladi» izohlari; sandbox CPU'da AVX/VNNI yo'qligi sababli INT8 tezlanishi kutilmaydi (bu o'zi muhim saboq).
 

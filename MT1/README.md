@@ -1,6 +1,5 @@
 # MT1. Sun'iy intellekt asosli mahsulotlar hayot sikli: Netflix, Uber va Amazon misollari tahlili
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT1_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda siz AI mahsulotining to'liq hayot siklini kichik, lekin to'liq ishlaydigan modellarda bosib o'tasiz: muammo ta'rifi va ma'lumot tahlili, Netflix uslubidagi tavsiya tizimi (bias-model, item-kNN, matrix factorization) va uning offline metrikalari, A/B test simulyatsiyasi, Uber uslubidagi talab prognozi va dinamik narx, Amazon uslubidagi ombor joylashuvi va zaxira siyosati, monitoring/drift va qayta o'qitish, nihoyat API xizmat, kanareyka relizi va model kartasi. Real kompaniyalardan farqi: barcha ma'lumotlar sintetik (generator kodi ochiq), o'lchamlar kichik, raqamlar taxminiy — maqsad usul va qaror mantiqini o'rganish.
 

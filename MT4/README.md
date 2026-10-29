@@ -1,6 +1,5 @@
 # MT4. Docker va Kubernetes platformalaridan foydalanib sun'iy intellekt modelini joylashtirish (Deployment) va AI xizmatlarini boshqarish bo'yicha amaliy loyiha
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT4_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda siz bitta AI xizmatini (tumor-api — o'sma belgilarini tasniflovchi model) boshidan oxirigacha joylashtirish loyihasini bajarasiz: FastAPI xizmati va avtomatik testlar, qatlamli konfiguratsiya va sog'liq tekshiruvlari, Dockerfile va docker-compose generatsiyasi va validatsiyasi, dev/prod Kubernetes manifestlari (Deployment, Service, HPA, ConfigMap, Secret, Ingress, PDB, NetworkPolicy), rolling update va canary, HPA va Cluster Autoscaler yuklama simulyatsiyasi hamda SLO asosidagi operatsion hisobot. Sandbox'da Docker va Kubernetes yo'q: xizmat jarayon ichida TestClient bilan ishlaydi, fayllar matn sifatida yaratilib Python'da tekshiriladi, klaster xulq-atvori esa simulyatsiya qilinadi. Vaqt, narx va yuklama raqamlari taxminiy.
 

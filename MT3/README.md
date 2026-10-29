@@ -1,6 +1,5 @@
 # MT3. Sun'iy intellektga asoslangan zamonaviy kompyuter tizimlari arxitekturalarini (CPU, GPU, TPU, NPU va FPGA) qiyosiy tahlil qilish va ularning AI ilovalaridagi samaradorligini baholash
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT3_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda siz besh xil hisoblash arxitekturasini analitik modellar va simulyatsiyalar orqali solishtirasiz: rasmiy cho'qqi qiymatlari bilan Roofline modeli, TPU sistolik massivining takt darajasidagi simulyatori, FPGA quvuri va fixed-point arifmetikasi, NPU uchun INT8 kvantlash, energiya va TCO kalkulyatori hamda yakuniy ko'p mezonli tanlov matritsasi. Real tezlatkichlar (GPU, TPU, NPU, FPGA) sandbox'da yo'q, shuning uchun ular modellar bilan baholanadi; yagona real o'lchov qurilmasi — 2 yadroli CPU, uning natijalari boshqa arxitekturalarga ekstrapolyatsiya qilinadi. Jadvaldagi barcha narx, quvvat va unumdorlik raqamlari taxminiy.
 
@@ -28,7 +27,7 @@ Yo'naltiruvchi savollar (avval o'zingiz javob bering):
 6. Batch=1 da LLM dekodida har token uchun barcha og'irliklarni bir marta o'qish kerak. Unda token/s ni qaysi ikki kattalik belgilaydi?
 7. Natijangizni qanday tekshirasiz: katta GEMM uchun AI ~2700, GEMV uchun ~2 op/bayt chiqdimi? Katta GEMM hamma qurilmada H, GEMV va ReLU esa X bo'ldimi?
 
-Kutilgan natija: Pasport jadvali, AI jadvali (GEMM ~2700, GEMV ~2 op/bayt), Roofline jadvali: katta GEMM hamma joyda H, GEMV/ReLU hamma joyda X; LLM dekod token/s ~ BW/7 GB; grafik.
+Kutilgan natija: Pasport jadvali, AI jadvali (GEMM ~2700, GEMV ~2 op/bayt), Roofline jadvali: katta GEMM deyarli hamma joyda H (Hailo-8 da X — xotira o'tkazuvchanligi past), GEMV/ReLU hamma joyda X; LLM dekod token/s ~ BW/7 GB; grafik.
 
 Tajriba qilib ko'ring:
 

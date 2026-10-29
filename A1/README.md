@@ -1,6 +1,5 @@
 # A1. Sun'iy intellektga asoslangan kompyuter tizimlari arxitekturasini tahlil qilish va loyihalash
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A1_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada siz SHV (shaxsiy himoya vositalari) aniqlash tizimi uchun hisoblash platformasini raqamlar bilan tanlaysiz: talablardan FLOP/TFLOP/s yuklamasini hisoblaysiz, platformalarni talablar matritsasi bo'yicha baholaysiz, kechikish byudjetini simulyatsiya qilasiz, Roofline tahlilini quriysiz, kichik CNN'ning FLOP'ini torch bilan sanaysiz va Hardware–Software Co-design izlanish fazosini grid search bilan ko'rib chiqasiz. Real labdan farqi: tarmoq yo'qligi sababli ultralytics YOLO vaznlari yuklanmaydi — rasmiy hujjatlardagi GFLOP/parametr qiymatlari jadval sifatida kiritilgan; GPU yo'q, shuning uchun o'lchovlar 2 yadroli CPU'da kichik modelda bajariladi.
 

@@ -1,6 +1,5 @@
 # A6. Sun'iy intellekt tizimlarining xavfsizligi va ishonchliligini tahlil qilish
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `A6_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu virtual laboratoriyada talaba sklearn digits (8x8 rasm) ustida kichik PyTorch MLP'ga FGSM va PGD hujumlarini qo'lda yozadi, aniqlikning epsilon'ga bog'liqlik egri chizig'ini quradi, qisqa adversarial o'qitish bilan mustahkamlikni taqqoslaydi, Grad-CAM o'rniga gradient-saliency xaritasini chizadi, sintetik «kredit» ma'lumotida fairlearn MetricFrame va ThresholdOptimizer bilan adolatlilikni o'lchaydi va tuzatadi, shap TreeExplainer bilan daraxt modelini tushuntiradi hamda 20 bandli etik tekshiruv ro'yxatini avtomatik baholaydi. Real labdan farqi: CIFAR-10/ResNet-18 va Adult o'rniga kichik, tarmoqsiz yuklanadigan ma'lumotlar; torchattacks va grad-cam kutubxonalari yo'q — hujumlar va saliency qo'lda yoziladi (bu o'rganish uchun foydaliroq).
 

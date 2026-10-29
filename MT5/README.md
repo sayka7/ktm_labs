@@ -1,6 +1,5 @@
 # MT5. LLM asosidagi AI tizimlarining muhandislik muammolari: prompt engineering, RAG arxitekturasi, LLM xavfsizligi va hallucination
 
-📄 Bosma qo'llanma (bosqichlar, kod, mashqlar, 20 variant): `MT5_laboratoriya_qollanma.pdf`
 🦉 Bosqichlar Suqrot usulida: har `sN_*.py` — karkas (TODO larni o'zingiz yozasiz), savollar shu faylda, ishoralar `ISHORALAR.md` da.
 Bu mustaqil ishda talaba LLM tizimining asosiy muhandislik qismlarini katta modelsiz, CPU'da qo'lda quradi: BPE tokenizatorini o'qitib kontekst byudjetini hisoblaydi, KV-kesh xotirasini baholaydi, sintetik korporativ bilim bazasida bo'laklash va BM25/TF-IDF qidiruvini recall@k va MRR bilan o'lchaydi, ekstraktiv mini-RAG, hallucination va prompt injection detektorlarini yasaydi hamda prompt shablonlarini regressiya testi bilan baholaydi. Real labdan farqi: internet va haqiqiy LLM yo'q — generator ekstraktiv, LLM xatti-harakati qoidalar bilan simulyatsiya qilinadi; har qadamda «haqiqiy LLM bilan qanday bo'ladi» izohi berilgan. Barcha raqamlar kichik sintetik ma'lumotda olingan va taxminiy.
 
